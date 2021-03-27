@@ -2,7 +2,7 @@ import sys
 sys.path.extend(['../qe'])
 
 ReQue = {
-    'parallel': 0,
+    'parallel': 1,
     'op': ['generate', 'search', 'evaluate', 'build'],
     'expanders': {
         'SenseDisambiguation'   : 0,
@@ -29,10 +29,10 @@ ReQue = {
         'Docluster'             : 0,
         'Termluster'            : 0,
         'Conceptluster'         : 0,
-        'OnFields'              : 0,
-        'AdapOnFields'          : 0,
+        'OnFields'              : 0,#make sure that the index for 'extcorpus' is available
+        'AdapOnFields'          : 0,#make sure that the index for 'extcorpus' is available
         'BertQE'                : 0,
-        'RM3'                   : 1,
+        'RM3'                   : 0,
     }
 }
 
@@ -108,27 +108,4 @@ corpora = {
         'extcorpus': 'gov2',#AdaptOnFields
     }
 }
-#
-#
-# model2params = {
-#     'thesaurus': thesaurus,
-#     'wordnet': wordnet,
-#     'word2vec': word2vec,
-#     'glove': glove,
-#     'anchor': anchor,
-#     'wiki': wiki,
-#     'tagmee': tagmee,
-#     'sensedisambiguation': sensedisambiguation,
-#     'conceptnet': conceptnet,
-#     'stem': stem,
-#     'relevancefeedback': relevancefeedback,
-#     'docluster': docluster,
-#     'termluster': termluster,
-#     'conceptluster': conceptnet,
-#     'onfields': onfields,
-#     'adaponfields': adaponfields
-# }
 
-#
-# def get_model_specific_params(model_name, field):
-#     return model2params[model_name.upper()][field]
