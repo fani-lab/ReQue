@@ -27,6 +27,7 @@ class AbstractQExpander:
         model_name = self.get_model_name().lower()
 
         Q_ = pd.DataFrame()
+
         with open(Qfilename, 'r') as Qfile:
             with open(Q_filename, 'w') as Q_file:
                 print('INFO: MAIN: {}: Expanding queries in {} ...'.format(self.get_model_name(), Qfilename))
@@ -69,7 +70,7 @@ class AbstractQExpander:
                             Q_ = Q_.append({model_name: q_}, ignore_index=True)
                             print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
-                    elif '\t' in line: #for tsv files
+                    elif len(line.split('\t')) > 2: #for tsv files
                         qid = int(line.split('\t')[0].rstrip())
                         q=line.split('\t')[1].rstrip()
                         try:

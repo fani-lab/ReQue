@@ -225,7 +225,7 @@ def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
         else: worker_thread(expander)
     if param.ReQue['parallel']: print(f'Starting threads per expanders for {[e for e in param.ReQue["op"] if e != "build"]} ...')
     for thread in threads: thread.start()
-    return threads
+    return threads, exceptions
 
 def run(corpus, rankers, metrics, output, rf=True, op=[]):
     if corpus == 'dbpedia':
