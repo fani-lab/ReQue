@@ -90,23 +90,23 @@ class AbstractQExpander:
     def read_expanded_queries(self, Q_filename):
         model_name = self.get_model_name().lower()
         Q_ = pd.DataFrame(columns=['qid'], dtype=int)
-        with open(Q_filename, 'r', encoding='utf-8') as Q_file:
+        with open(Q_filename, 'r') as Q_file:
             print('INFO: MAIN: {}: Reading expanded queries in {} ...'.format(self.get_model_name(), Q_filename))
             for line in Q_file:
                 q_ = None
                 if '<num>' in line:
-                    qid = int(line[line.index(':') + 1:])
+                    qid = line[line.index(':') + 1:].strip()
                 elif line[:7] == '<title>':#for robust & gov2
                     q_ = line[8:].strip() + ' '
                 elif '<topic' in line:
                     s = line.index('\"') + 1
                     e = line.index('\"', s + 1)
-                    qid = int(line[s:e])
+                    qid = line[s:e].strip()
                 elif line[2:9] == '<query>':  # for clueweb09b & clueweb12b13
                     q_ = line[9:-9] + ' '
-                elif '\t' in line:
+                elif len(line.split('\t')) > 2:
                     qid = line.split('\t')[0].rstrip()
-                    q_=line.split('\t')[1].rstrip()
+                    q_= line.split('\t')[1].rstrip()
                 else:
                     continue
                 if q_:
