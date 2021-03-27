@@ -53,7 +53,7 @@ The following source folders are to be populated by the query dataset `Q`, judme
 |       # wiki-anchor-text-en-ttl-300d.vec.vectors.npy
 ```
 
-[`anserini/`](./anserini/): source folder for [anserini](https://github.com/castorini/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
+[`anserini/`](./anserini/): source folder for [anserini](https://github.com/hosseinfani/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
 
 ```
 +---anserini 
@@ -130,7 +130,7 @@ The target folders are the output repo for the expanders, gold standard datasets
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/castorini/anserini) (java 11+)
+### [anserini](https://github.com/hosseinfani/anserini) (java 11+)
 ### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
 ### python 3.7 and the following packages:
 ```
@@ -174,7 +174,7 @@ $> conda env create -f environment.yml
 $> conda activate ReQue
 ```
 
-[Anserini](https://github.com/castorini/anserini) must be installed in [`anserini/`](./anserini/) for indexing, information retrieval and ranking, and evaluation on the original query datasets. The documents in the corpus must be indexed, e.g., by the following commands for `Robust04` (already available [here](https://git.uwaterloo.ca/jimmylin/anserini-indexes/raw/master/index-robust04-20191213.tar.gz)), `Gov2`, `ClueWeb09-B`, and `ClueWeb12-B13`.
+[Anserini](https://github.com/hosseinfani/anserini) must be installed in [`anserini/`](./anserini/) for indexing, information retrieval and ranking, and evaluation on the original query datasets. The documents in the corpus must be indexed, e.g., by the following commands for `Robust04` (already available [here](https://git.uwaterloo.ca/jimmylin/anserini-indexes/raw/master/index-robust04-20191213.tar.gz)), `Gov2`, `ClueWeb09-B`, and `ClueWeb12-B13`.
 
 For `Antique` dataset, we first need to convert the antique tsv files into tsv into Anserini's jsonl files as per instructed [here](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md), 
 
