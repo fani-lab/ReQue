@@ -33,4 +33,4 @@ dependencies:
     - sentencepiece==0.1.94
     - torch==1.7.1
     - pyserini==0.10.0.1
-    
+    - prettytable==2.1.0

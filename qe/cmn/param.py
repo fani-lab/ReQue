@@ -3,10 +3,10 @@ sys.path.extend(['../qe'])
 
 ReQue = {
     'parallel': 1,
-    'op': ['generate', 'search', 'evaluate', 'build'],
+    'op': ['generate', 'search', 'evaluate', 'build'],#['generate', 'search', 'evaluate', 'build']
     'expanders': {
         'SenseDisambiguation'   : 0,
-        'Thesaurus'             : 0,
+        'Thesaurus'             : 1,
         'Wordnet'               : 0,
         'Conceptnet'            : 0,
         'Tagmee'                : 0,
@@ -16,7 +16,7 @@ ReQue = {
         'Anchor'                : 0,
         'Wiki'                  : 0,
 
-        'KrovetzStemmer'        : 0,
+        'KrovetzStemmer'        : 1,
         'LovinsStemmer'         : 0,
         'PaiceHuskStemmer'      : 0,
         'PorterStemmer'         : 0,
