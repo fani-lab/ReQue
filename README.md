@@ -1,5 +1,5 @@
 ## Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
-:movie_camera: [Video Playlist](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS): 0) [Demo](https://youtu.be/oQSoQGYCLY4) -> 1) [Introduction](https://youtu.be/ydO-LVhzVb8) -> 2) [Installation](https://youtu.be/Vb45ALbYfy4) ->3) [Extension](https://youtu.be/vfLesv_fMGI)
+:movie_camera: [Video Playlist](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS): 1) [Introduction](https://youtu.be/ydO-LVhzVb8) -> 2) [Installation](https://youtu.be/Vb45ALbYfy4) ->3) [Extension](https://youtu.be/vfLesv_fMGI)
 <p align="center">
     <img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram">
     <br>
