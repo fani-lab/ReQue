@@ -130,7 +130,8 @@ def aggregate(path):
 
     df.to_csv(path + "agg_results.csv", index=False)
 
-# # {CUDA_VISIBLE_DEVICES={zero-base gpu index reverse to the system}} python -u main.py {topn=[1,2,...]} {topics=[robust04, gov2, clueweb09b, clueweb12b13, all]} 2>&1 | tee log &
+# # {CUDA_VISIBLE_DEVICES={zero-base gpu indexes, comma seprated reverse to the system}} python -u main.py {topn=[1,2,...]} {topics=[robust04, gov2, clueweb09b, clueweb12b13, all]} 2>&1 | tee log &
+# # CUDA_VISIBLE_DEVICES=0,1 python -u main.py 1 robust04 2>&1 | tee robust04.topn1.log &
 
 # # python -u main.py 1 robust04 2>&1 | tee robust04.topn1.log &
 # # python -u main.py 1 gov2 2>&1 | tee gov2.topn1.log &
