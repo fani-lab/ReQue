@@ -374,8 +374,8 @@ Given a gold standard dataset which is built for an original query dataset for a
 
 ```
 @inproceedings{ReQueDemo,
-  author    = {Mahtab Tamannaee and
-               Hossein Fani and
+  author    = {Hossein Fani and
+               Mahtab Tamannaee and
                Fattane Zarrinkalam and
                Jamil Samouh and
                Samad Paydar and
@@ -383,12 +383,12 @@ Given a gold standard dataset which is built for an original query dataset for a
   title     = {An Extensible Toolkit of Query Refinement Methods and Gold Standard Dataset Generation},
   booktitle = {{ECIR} '21: Advances in Information Retrieval - 43rd European Conference on IR Research},
   series    = {Lecture Notes in Computer Science},
-  volume    = {tba},
+  volume    = {12657},
   year      = {2021},
-  pages     = {tba},
+  pages     = {498--503},
   publisher = {{Springer}},
-  url       = {tba},
-  doi       = {tba}
+  url       = {https://doi.org/10.1007/978-3-030-72240-1_54},
+  doi       = {10.1007/978-3-030-72240-1_54}
   }
 ```
 
