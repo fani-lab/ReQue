@@ -33,6 +33,7 @@ def find_fquery(types):
 #09.mq.topics.20001-60000.prep.tsv
 #prels.20001-60000.prep.tsv
 
+
 if __name__ == "__main__":
     query = sys.argv[1]
     types = sys.argv[2]
