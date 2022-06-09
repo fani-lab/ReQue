@@ -96,6 +96,17 @@ corpora = {
         'qrels':'../ds/antique/qrels.antique.txt',
         'extcorpus': 'gov2',#AdaptOnFields
     },
+    'trec2009mq': {
+        'index': '../ds/trec2009mq/lucene-index-trec2009mq',
+        'size': 50000000,
+        'topics': '../ds/trec2009mq/prep/09.mq.topics.20001-60000.prep.tsv',
+        'prels': '',#this will be generated after a retrieval {bm25, qld}
+        'w_t': 2.25,#OnFields # to be tuned
+        'w_a': 1,#OnFields # to be tuned
+        'tokens': 16000000,
+        'qrels':'../ds/trec2009mq/prep/prel.20001-60000.prep.tsv',
+        'extcorpus': 'gov2',#AdaptOnFields
+    },
         'dbpedia': {
         'index': '../ds/dbpedia/lucene-index-dbpedia-collection',
         'size': 4632359,
