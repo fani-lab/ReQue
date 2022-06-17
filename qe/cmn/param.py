@@ -96,8 +96,6 @@ corpora = {
         'qrels':'../ds/antique/qrels.antique.txt',
         'extcorpus': 'gov2',#AdaptOnFields
     },
-    'trec2009mq': {
-        'index': '../ds/trec2009mq/lucene-index-trec2009mq',
     'trec09mq': {
         'index': '../ds/trec09mq/lucene-index-trec09mq',
         'size': 50000000,

@@ -200,7 +200,6 @@ if __name__=='__main__':
                     df4 = pd.read_csv('{}/clueweb12b13/topics.clueweb12b13.201-300.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
                     df5 = pd.read_csv('{}/antique/topics.antique.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
                     df6 = pd.read_csv('{}/dbpedia/topics.dbpedia.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
-                    df = pd.concat([df1, df2, df3, df4, df5, df6], ignore_index=True)
                     df7 = pd.read_csv('{}/trec09mq/topics.trec09mq.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
                     df = pd.concat([df1, df2, df3, df4, df5, df6, df7], ignore_index=True)
                     csv2json(df, '{}/{}.topn{}/topics.{}.{}.{}/'.format(ReQue['output'], corpus, topn, corpus, ranker, metric), topn)

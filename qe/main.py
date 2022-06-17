@@ -258,7 +258,7 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
             result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
             build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
 
-    if corpus == 'trec2009mq':
+    if corpus == 'trec09mq':
         topicreader = 'TsvInt'
         output_ = '{}topics.trec09mq'.format(output)
         expanders = ef.get_nrf_expanders()
