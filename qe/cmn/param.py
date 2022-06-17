@@ -98,13 +98,17 @@ corpora = {
     },
     'trec2009mq': {
         'index': '../ds/trec2009mq/lucene-index-trec2009mq',
+    'trec09mq': {
+        'index': '../ds/trec09mq/lucene-index-trec09mq',
         'size': 50000000,
         'topics': '../ds/trec2009mq/prep/09.mq.topics.20001-60000.prep.tsv',
+        'topics': '../ds/trec09mq/prep/09.mq.topics.20001-60000.prep',
         'prels': '',#this will be generated after a retrieval {bm25, qld}
         'w_t': 2.25,#OnFields # to be tuned
         'w_a': 1,#OnFields # to be tuned
         'tokens': 16000000,
         'qrels':'../ds/trec2009mq/prep/prel.20001-60000.prep.tsv',
+        'qrels':'../ds/trec09mq/prep/prel.20001-60000.prep',
         'extcorpus': 'gov2',#AdaptOnFields
     },
         'dbpedia': {
