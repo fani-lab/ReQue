@@ -160,6 +160,7 @@ if __name__=='__main__':
     corpora = sys.argv[2:]
     if not corpora:
         corpora = ['robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'antique', 'all']
+        corpora = ['robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'antique','trec09mq', 'all']
     if not topn:
         topn = 1
 
@@ -188,6 +189,9 @@ if __name__=='__main__':
                 if corpus == 'dbpedia':
                     df = pd.read_csv('{}/{}/topics.{}.{}.{}.dataset.csv'.format(ReQue['input'], corpus, corpus, ranker, metric), header=0)
                     csv2json(df, '{}/{}.topn{}/topics.{}.{}.{}/'.format(ReQue['output'], corpus, topn, corpus, ranker, metric), topn)
+                if corpus == 'trec09mq':
+                    df = pd.read_csv('{}/{}/topics.{}.{}.{}.dataset.csv'.format(ReQue['input'], corpus, corpus, ranker, metric), header=0)
+                    csv2json(df, '{}/{}.topn{}/topics.{}.{}.{}/'.format(ReQue['output'], corpus, topn, corpus, ranker, metric), topn)
 
                 if corpus == 'all':
                     df1 = pd.read_csv('{}/robust04/topics.robust04.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
@@ -197,6 +201,8 @@ if __name__=='__main__':
                     df5 = pd.read_csv('{}/antique/topics.antique.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
                     df6 = pd.read_csv('{}/dbpedia/topics.dbpedia.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
                     df = pd.concat([df1, df2, df3, df4, df5, df6], ignore_index=True)
+                    df7 = pd.read_csv('{}/trec09mq/topics.trec09mq.{}.{}.dataset.csv'.format(ReQue['input'], ranker, metric), header=0)
+                    df = pd.concat([df1, df2, df3, df4, df5, df6, df7], ignore_index=True)
                     csv2json(df, '{}/{}.topn{}/topics.{}.{}.{}/'.format(ReQue['output'], corpus, topn, corpus, ranker, metric), topn)
 
                 data_dir = '{}/{}.topn{}/topics.{}.{}.{}/'.format(ReQue['output'], corpus, topn, corpus, ranker, metric)

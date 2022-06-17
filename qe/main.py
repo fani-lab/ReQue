@@ -258,6 +258,21 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
             result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
             build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
 
+    if corpus == 'trec2009mq':
+        topicreader = 'TsvInt'
+        output_ = '{}topics.trec09mq'.format(output)
+        expanders = ef.get_nrf_expanders()
+        if rf:#local analysis
+            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_, ext_corpus=param.corpora[corpus]['extcorpus'])
+
+        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
+        for thread in threads: thread.join()
+        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
+
+        if 'build' in op:
+            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
+            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
+
     if corpus == 'robust04':
         topicreader= 'Trec'
         output_ = '{}topics.robust04'.format(output)
@@ -376,6 +391,8 @@ def addargs(parser):
 
 # # python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
 # # python -u main.py --corpus antique --output ./output/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
+
+# # python -u main.py --corpus trec09mq --output ./output/trec09mq/ --ranker bm25 --metric map 2>&1 | tee trec09mq.bm25.log &
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ReQue (Refining Queries)')
