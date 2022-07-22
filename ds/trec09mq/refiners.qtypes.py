@@ -65,10 +65,10 @@ if __name__ == "__main__":
     output = 'refiners.qtypes.pkl'
     output_norm_freq='normalized.frequency.pkl'
     output_norm_min_max='normalized.min_max.pkl'
-    #result = get_refiners_by_qtypes('../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv',
-                                   # '../../qe/output/trec09mq/topics.trec09mq.bm25.map.dataset.csv',
-                                    #'./queryclasses',
-                                    #output)
-    #heatmap(output, "./refiners.qtypes.png")
+    result = get_refiners_by_qtypes('../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv',
+                                    '../../qe/output/trec09mq/topics.trec09mq.bm25.map.dataset.csv',
+                                    './queryclasses',
+                                    output)
+    heatmap(output, "./refiners.qtypes.png")
     normalize_by_qtype('../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv',output,'./queryclasses',output_norm_freq)
     normalize(output,output_norm_min_max)
