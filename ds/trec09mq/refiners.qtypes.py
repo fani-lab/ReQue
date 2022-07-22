@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def get_refiners_by_qtypes(all, dataset, qtypes, output):
 
-    refiners = pd.read_csv(all, index_col=0, nrows=0).columns[4::3]
+    refiners = pd.read_csv(all, index_col=0, nrows=0).columns[3::3]
     q_ = pd.read_csv(dataset, sep=',')
     qtypes = pd.read_csv(qtypes, sep='\t', usecols=['Topic', 'Class'])
     qtypes['Topic'] = qtypes['Topic'].astype(int)
