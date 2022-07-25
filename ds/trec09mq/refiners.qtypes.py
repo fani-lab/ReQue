@@ -24,51 +24,44 @@ def get_refiners_by_qtypes(all, dataset, qtypes, output):
         for i in range(1, row['star_model_count'] * 3, 3): result[row["Class"]][str(row[i + 3])] += 1
 
     result = pd.DataFrame.from_dict(result)
-    with open(output, 'wb') as f: pickle.dump(result, f)
+    with open(f'{output}refiners.qtypes.pkl', 'wb') as f: pickle.dump(result, f)
+    heatmap(result, f"{output}refiners.qtypes.png")
     return result
 
-def heatmap(matrix, output):
-    with open(matrix, 'rb') as f: df = pickle.load(f)
-    df=df.transpose()
-    sns.heatmap(df, annot=True)
+def heatmap(matrix, output, anot=False):
+    df=matrix.transpose()
+    sns.heatmap(df, annot=anot)
     plt.title("Distribution of query refiners in query types", fontsize=12)
     plt.savefig(output, bbox_inches='tight', dpi=100)
     plt.show()
 
-def normalize_by_qtype(all,raw_result,queryclass,output):
-    # load queryclass file and find the frequency
-    # laod the raw_result
-    # update the raw_result relative to the frequec
-    # dump the update (./'pkl)
-    # heat(update, output/ *png)
+def normalize_by_qtype(raw_result, queryclass, output):
     qtypes = pd.read_csv(queryclass, sep='\t', usecols=['Topic', 'Class'])
-    refiners = pd.read_csv(all, index_col=0, nrows=0).columns[3::3]
     qtypes_counts = Counter(qtypes['Class'])
+
     with open(raw_result, 'rb') as f: df = pickle.load(f)
+    df = df.astype(float, copy=False)
+    refiners = df.index.values
     for qt in qtypes_counts:
         for r in refiners:
-            df[qt][r]=(df[qt][r]*100)/qtypes_counts[qt]
-    with open(output, 'wb') as f: pickle.dump(df, f)
-    heatmap(output,"./normalized.frequency.png")
-
-
+            df[qt][r] = df[qt][r] / qtypes_counts[qt]
+    with open(f"{output}refiners.qtypes.norm.freq.pkl", 'wb') as f: pickle.dump(df, f)
+    heatmap(df, f"{output}refiners.qtypes.norm.freq.png")
+    return df
 
 def normalize(raw_result,output):
     with open(raw_result, 'rb') as f: df = pickle.load(f)
+    df = df.astype(float, copy=False)
     #n= (df - df.mean()) / df.std() #mean normalization
-    df=(df-df.min())/(df.max()-df.min()) #min-max normalization
-    with open(output, 'wb') as f: pickle.dump(df, f)
-    heatmap(output, "./normalized.min_max.png")
-
+    df = (df - df.min().min()) / (df.max().max() - df.min().min()) #min-max normalization
+    with open(f"{output}refiners.qtypes.norm.minmax.pkl", 'wb') as f: pickle.dump(df, f)
+    heatmap(df, f"{output}refiners.qtypes.norm.minmax.png")
+    return df
 
 if __name__ == "__main__":
-    output = 'refiners.qtypes.pkl'
-    output_norm_freq='normalized.frequency.pkl'
-    output_norm_min_max='normalized.min_max.pkl'
     result = get_refiners_by_qtypes('../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv',
                                     '../../qe/output/trec09mq/topics.trec09mq.bm25.map.dataset.csv',
                                     './queryclasses',
-                                    output)
-    heatmap(output, "./refiners.qtypes.png")
-    normalize_by_qtype('../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv',output,'./queryclasses',output_norm_freq)
-    normalize(output,output_norm_min_max)
+                                    './')
+    normalize_by_qtype('./refiners.qtypes.pkl', './queryclasses', './')
+    normalize('./refiners.qtypes.pkl', './')
