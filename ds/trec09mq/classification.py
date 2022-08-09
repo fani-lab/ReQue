@@ -53,13 +53,14 @@ def main(splits, Q, y,feature_set, path, cmd=['prep', 'train', 'eval', 'test']):
 #         if 'test' in cmd: test(q_features, q_labels.toarray().ravel(), model, splits=splits, Q=Q, output=output)
 
 
-def con_r2i(df):
+def con_r2i(df,all):
+    df_all=pd.read_csv(all, encoding="ISO-8859-1", sep=',')
+    R = pd.read_csv(all, encoding="ISO-8859-1", sep=',').columns[4:len(df_all.columns):3]
     r2i = {}
     r= df['method.1'].unique()
-    #print(r)
+    print(R)
     for i in range(len(r)):
-        r2i[r[i]]=i
-    #print(r2i)
+        r2i[r[i]]=i+1
     for i in range(len(df)):
         # replace refinement with index
         df['method.1'][i]=r2i[df['method.1'][i]]
@@ -70,20 +71,19 @@ def con_r2i(df):
         #print(col)
         #x=r2i[df['method.1'][i]]
         #df.loc[:, 'method.1'][i]=
-    #print(df['method.1'])
     return df
 
 def con_t2i(df):
     t2i = {}
     t= df['Class'].unique()
-    print(t)
+    # print(t)
     for i in range(len(t)):
-        t2i[t[i]]=i
-    print(t2i)
+        t2i[t[i]]=i+1
+    # print(t2i)
     for i in range(len(df)):
         # replace refinement with index
         df['Class'][i]=t2i[df['Class'][i]]
-    print(df['Class'])
+    #print(df['Class'])
     # the df contain both refinemnets and qtypes indexes
     return df
 
@@ -95,13 +95,14 @@ if __name__ == "__main__":
                     './queryclasses')
     splits = create_evaluation_splits(len(df_results), 5)
     feature_sets = [['basic'], ['userid', 'basic']]
-    con_r2i(df_results)
-    # the df contain both refinemnets and qtypes indexes
+    con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv')
+    #the df contain both refinemnets and qtypes indexes
     df=con_t2i(con_r2i(df_results))
+    print("df",df['method.1'])
     feature_sets = [['basic'], ['userid', 'basic']]
-    # for feature_set in feature_sets:
-    #     feature_set_str = '.'.join(feature_set)
-    #     main(splits, df['abstractqueryexpansion'], df['method.1'],feature_set, f'./results')
+    for feature_set in feature_sets:
+        feature_set_str = '.'.join(feature_set)
+    main(splits, df['abstractqueryexpansion'], df['method.1'],feature_sets, f'./results')
 
 
 
