@@ -97,7 +97,7 @@ if __name__ == "__main__":
     feature_sets = [['basic'], ['userid', 'basic']]
     con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv')
     #the df contain both refinemnets and qtypes indexes
-    df=con_t2i(con_r2i(df_results))
+    df=con_t2i(con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv'))
     print("df",df['method.1'])
     feature_sets = [['basic'], ['userid', 'basic']]
     for feature_set in feature_sets:

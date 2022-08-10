@@ -35,10 +35,9 @@ def extract_load_q_features(Q, y, feature_set, q_features_file=None):
         print("lllllllllllllllll",x)
     except:
         x = extract_features(Q, feature_set)
-        # print(x.shape, y.shape)
+        print(x.shape, y.shape)
         # print(x)
         # print(y.values.reshape(y.shape[0],1))
-        # z=sparse.csr_matrix(y)
         x_y = sparse.csr_matrix(sparse.hstack((x, y.values.reshape(y.shape[0],1))))
         #rint("llpppppppppppp", x_y)
         #utils.save_sparse_csr(q_features_file, x_y)
