@@ -9,6 +9,7 @@ import extract_features as ef
 import os, traceback, math, threading, time
 from joblib import dump, load
 import sys
+from scipy import sparse
 import torch #just for topk(1)! should be replaced.
 sys.path.extend(["../"])
 import multiprocessing
@@ -40,9 +41,9 @@ def calc_metrics(y, y_, probs):
     metrics['macro_auc_ovo'] = metrics['weighted_auc_ovo'] = metrics['macro_auc_ovr'] = metrics['weighted_auc_ovr'] = metrics['weighted_f1'] = None
 
     try:
-        metrics['weighted_f1'] = f1_score(y_, y, average='weighted')
-        metrics['macro_auc_ovo'] = roc_auc_score(y, probs, multi_class="ovo", average="macro")
-        metrics['weighted_auc_ovo'] = roc_auc_score(y, probs, multi_class="ovo", average="weighted")
+        metrics['weighted_f1'] = f1_score(y_, y.todense(), average='weighted')
+        #metrics['macro_auc_ovo'] = roc_auc_score(y, np.argmax(probs, axis=0), multi_class="ovo", average="macro")
+        #metrics['weighted_auc_ovo'] = roc_auc_score(y, probs, multi_class="ovo", average="weighted")
     except:
         print(traceback.format_exc())
         pass
@@ -70,9 +71,7 @@ def learn_kf(X, y, model, splits, Q, output):
         y_train = y[splits['folds'][foldidx]['train']]
         # X_valid = X[splits['folds'][foldidx]['valid'], :]
         # y_valid = y[splits['folds'][foldidx]['valid']]
-
-
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train.todense())
         if not os.path.isdir(f'{output}'): os.makedirs(f'{output}')
         dump(model, f'{output}/{model.__class__.__name__}.train.fold{foldidx}.pkl')
         # probs = model.predict_proba(X_valid)
@@ -81,7 +80,7 @@ def learn_kf(X, y, model, splits, Q, output):
         # y_pred = [model.classes_[i] for i in idxes]
         # metrics[foldidx] = calc_metrics(y_valid, y_pred, probs.max(axis=1))
         #df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['folds'][foldidx]['valid']]]['Original Query'], splits['folds'][foldidx]['valid'], y_valid, y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
-        df.to_csv(f'{output}/{model.__class__.__name__}.valid{foldidx}.pred.csv', index=False)
+        #df.to_csv(f'{output}/{model.__class__.__name__}.valid{foldidx}.pred.csv', index=False)
 
     log_metrics(metrics, f'{output}/{model.__class__.__name__}.valid.log')
 
@@ -90,17 +89,18 @@ def test(X, y, model, splits, Q, output):
     X_test = X[splits['test'], :]
     y_test = y[splits['test']]
 
-    all_train = np.concatenate([splits['folds'][0]['train'], splits['folds'][0]['valid']])
-    X_train = X[all_train, :]
-    y_train = y[all_train]
-    model.fit(X_train, y_train)
-    if not os.path.isdir(f'{output}'): os.makedirs(f'{output}')
-    dump(model, f'{output}/{model.__class__.__name__}.train.fold_.pkl')
+    # all_train = np.concatenate([splits['folds'][0]['train'], splits['folds'][0]['valid']])
+    # X_train = X[all_train, :]
+    # y_train = y[all_train]
+    # model.fit(X_train, y_train)
+    # if not os.path.isdir(f'{output}'): os.makedirs(f'{output}')
+    # dump(model, f'{output}/{model.__class__.__name__}.train.fold_.pkl')
     probs = model.predict_proba(X_test)
     _, idxes = torch.as_tensor(model.predict_proba(X_test)).topk(1)
     y_pred = [model.classes_[i] for i in idxes]
-    metrics['_'] = calc_metrics(y_test, y_pred, probs.max(axis=1))
-    df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]]['Original Query'], splits['test'],y_test, y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
+    metrics['_'] = calc_metrics(y_test, y_pred, probs.max(axis=0))
+    df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'], y_test.toarray().flatten(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
+    #df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'],y_test.ravel(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
     df.to_csv(f'{output}/{model.__class__.__name__}.test_.pred.csv', index=False)
 
     for foldidx in splits['folds'].keys():
@@ -108,21 +108,21 @@ def test(X, y, model, splits, Q, output):
         probs = model.predict_proba(X_test)
         _, idxes = torch.as_tensor(model.predict_proba(X_test)).topk(1)
         y_pred = [model.classes_[i] for i in idxes]
-        metrics[foldidx] = calc_metrics(y_test, y_pred, probs.max(axis=1))
-        df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]]['Original Query'], splits['test'],y_test, y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
+        metrics[foldidx] = calc_metrics(y_test, y_pred, probs.max(axis=0))
+        df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'],y_test.toarray().flatten(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
         df.to_csv(f'{output}/{model.__class__.__name__}.test{foldidx}.pred.csv', index=False)
 
     log_metrics(metrics, f'{output}/{model.__class__.__name__}.test.log')
 
-def main(splits, Q, y,feature_set, path, cmd=['prep', 'train', 'eval', 'test']):
+def main(splits, Q, y,qt,feature_set, path, cmd=['prep', 'train', 'eval', 'test']):
     q_features, q_labels = ef.extract_load_q_features(Q, y,feature_set, q_features_file=path)
     print(q_features)
-#     if 'userid' in feature_set:
-#         userID_col = np.array(Q['UserID'])[:,None]
-#         q_features = sparse.hstack([userID_col, q_features]).tocsr()
-#
+    if 'querytype' in feature_set:
+        querytype_col = np.array(qt, dtype=float)[:,None]#qt.astype(float) [:,None]
+        q_featureshhhhhhh = sparse.hstack([querytype_col, q_features]).tocsr()
+
     cores = multiprocessing.cpu_count()
-    models = [LogisticRegression(n_jobs=cores, max_iter=100, random_state=0),
+    models = [#LogisticRegression(n_jobs=cores, max_iter=100, random_state=0),
               RandomForestClassifier(n_jobs=cores, n_estimators=100, max_depth=10, random_state=0),  #
               # XGBClassifier(n_jobs=cores, n_estimators=1000, max_depth=15, learning_rate=0.1, random_state=random_seed),
               # MLP (word embdedding in input, n_refiners in output)
@@ -132,8 +132,8 @@ def main(splits, Q, y,feature_set, path, cmd=['prep', 'train', 'eval', 'test']):
     output = f'{path}.qf'
 
     for model in models:
-        if 'train' in cmd: learn_kf(q_features, q_labels.toarray().ravel(), model, splits=splits, Q=Q, output=output)
-       # if 'test' in cmd: test(q_features, q_labels.toarray().ravel(), model, splits=splits, Q=Q, output=output)
+        if 'train' in cmd: learn_kf(q_features, q_labels, model, splits=splits, Q=Q, output=output)
+        if 'test' in cmd: test(q_features, q_labels, model, splits=splits, Q=Q, output=output)
 
 
 def con_r2i(df,all):
@@ -178,28 +178,10 @@ if __name__ == "__main__":
     #the df contain both refinemnets and qtypes indexes
     df=con_t2i(con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv'))
     #feature_sets = [['w2v'], ['bert'], ['w2v','bert'], ['userid', 'w2v'], ['userid', 'bert'], ['userid', 'w2v','bert']]
-    feature_sets = [['bert'], ['userid', 'bert']]
+    feature_sets = [['querytype','bert']]
     for feature_set in feature_sets:
         feature_set_str = '.'.join(feature_set)
-        main(splits, df['abstractqueryexpansion'], df['method.1'],feature_set, f'./results.npz')
+        main(splits, df['abstractqueryexpansion'], df['method.1'], df['Class'],feature_set, f'./results.npz')
 
-    # try:
-    #     features_label = utils.load_sparse_csr(q_features_file)
-    #     x=features_label[:, :-1]
-    #     y=features_label[:, -1:]
-    # except:
-    #     x = extract_features(df_results['abstractqueryexpansion'], feature_set)
-    #     x_y = sparse.csr_matrix(sparse.hstack((x, df_results["method.1"])))
-    #     utils.save_sparse_csr(q_features_file, q_features_label)
-
-
-    # if x = x + qtype
-
-    #print(r2i_x,'\n', i2r_x)
-   ##feature_set = ['basic']
-    #main(splits, Q, r2i_x,feature_set, f'./results')
-    # for feature_set in feature_sets:
-    #     feature_set_str = '.'.join(feature_set)
-    #     main(splits, Q, feature_set, f'../../output/yandex/yandex.{feature_set_str}')
 
 
