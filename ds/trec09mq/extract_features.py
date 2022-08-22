@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import os
 from sentence_transformers import SentenceTransformer
+
+
+
 from lib import text_corpus as tc, utils
 
 def extract_features(Q, feature_set=[]):#['basic', 'linguistic', 'w2v', 'bert']
@@ -41,20 +44,7 @@ def extract_load_q_features(Q, y, feature_set, q_features_file=None):
         return x, y
     except:
         x = extract_features(Q, feature_set)
-        y = np.array([y], dtype=float).transpose()
-        print(x.shape, y.shape)
-        # print(x)
-        # print(y.values.reshape(y.shape[0],1))
+        y = sparse.csr_matrix(y, dtype=float).transpose()
         x_y = sparse.csr_matrix(sparse.hstack((x, y)))
         utils.save_sparse_csr(q_features_file, x_y)
         return x, y
-
-    # try:
-    #     features_label = utils.load_sparse_csr(q_features_file)
-    #     return features_label[:, :-1], features_label[:, -1:]
-    # except:
-    #     q_features = extract_features(Q, feature_set)
-    #     q_features_label = sparse.csr_matrix(sparse.hstack((q_features, y)))
-    #     utils.save_sparse_csr(q_features_file, q_features_label)
-    #     print(f"saved query features with shape (data size, feature size + topn): {q_features.shape}")
-    #     return q_features_label[:, :-1], q_features[:, -1:]

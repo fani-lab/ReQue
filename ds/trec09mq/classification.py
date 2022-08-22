@@ -99,7 +99,7 @@ def test(X, y, model, splits, Q, output):
     _, idxes = torch.as_tensor(model.predict_proba(X_test)).topk(1)
     y_pred = [model.classes_[i] for i in idxes]
     metrics['_'] = calc_metrics(y_test, y_pred, probs.max(axis=0))
-    df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'], y_test.toarray().flatten(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
+    df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'], y_test.toarray().ravel(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
     #df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'],y_test.ravel(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
     df.to_csv(f'{output}/{model.__class__.__name__}.test_.pred.csv', index=False)
 
@@ -109,17 +109,16 @@ def test(X, y, model, splits, Q, output):
         _, idxes = torch.as_tensor(model.predict_proba(X_test)).topk(1)
         y_pred = [model.classes_[i] for i in idxes]
         metrics[foldidx] = calc_metrics(y_test, y_pred, probs.max(axis=0))
-        df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'],y_test.toarray().flatten(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
+        df = pd.DataFrame(np.asarray([Q.loc[Q.index[splits['test']]], splits['test'],y_test.toarray().ravel(), y_pred]).transpose(), columns=['List of Terms', 'idx', 'true', 'pred'], dtype=object)
         df.to_csv(f'{output}/{model.__class__.__name__}.test{foldidx}.pred.csv', index=False)
 
     log_metrics(metrics, f'{output}/{model.__class__.__name__}.test.log')
 
 def main(splits, Q, y,qt,feature_set, path, cmd=['prep', 'train', 'eval', 'test']):
     q_features, q_labels = ef.extract_load_q_features(Q, y,feature_set, q_features_file=path)
-    print(q_features)
     if 'querytype' in feature_set:
         querytype_col = np.array(qt, dtype=float)[:,None]#qt.astype(float) [:,None]
-        q_featureshhhhhhh = sparse.hstack([querytype_col, q_features]).tocsr()
+        q_features = sparse.hstack([querytype_col, q_features]).tocsr()
 
     cores = multiprocessing.cpu_count()
     models = [#LogisticRegression(n_jobs=cores, max_iter=100, random_state=0),
@@ -129,7 +128,7 @@ def main(splits, Q, y,qt,feature_set, path, cmd=['prep', 'train', 'eval', 'test'
               # multilabel
               ]
 
-    output = f'{path}.qf'
+    output = f'{path}.{feature_set}'
 
     for model in models:
         if 'train' in cmd: learn_kf(q_features, q_labels, model, splits=splits, Q=Q, output=output)
@@ -173,12 +172,11 @@ def con_t2i(df):
 if __name__ == "__main__":
     df_results=preprocess_data('../../qe/output/trec09mq/topics.trec09mq.bm25.map.dataset.csv','./queryclasses')
     splits = create_evaluation_splits(len(df_results), 5)
-    feature_sets = [['basic'], ['userid', 'basic']]
+    feature_sets = [['bert'], ['querytype', 'bert']]
     con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv')
     #the df contain both refinemnets and qtypes indexes
     df=con_t2i(con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv'))
     #feature_sets = [['w2v'], ['bert'], ['w2v','bert'], ['userid', 'w2v'], ['userid', 'bert'], ['userid', 'w2v','bert']]
-    feature_sets = [['querytype','bert']]
     for feature_set in feature_sets:
         feature_set_str = '.'.join(feature_set)
         main(splits, df['abstractqueryexpansion'], df['method.1'], df['Class'],feature_set, f'./results.npz')
