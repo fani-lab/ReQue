@@ -1,0 +1,7 @@
+fold#,macro_auc_ovo,weighted_auc_ovo,macro_auc_ovr,weighted_auc_ovr,weighted_f1,
+_,None,None,None,None,0.13633415603636953,
+0,None,None,None,None,0.08912369954569442,
+1,None,None,None,None,0.16729106138042224,
+2,None,None,None,None,0.11433080200099767,
+3,None,None,None,None,0.14716027491082118,
+4,None,None,None,None,0.13633415603636953,

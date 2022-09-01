@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import os
 from sentence_transformers import SentenceTransformer
-
-
-
 from lib import text_corpus as tc, utils
 
 def extract_features(Q, feature_set=[]):#['basic', 'linguistic', 'w2v', 'bert']

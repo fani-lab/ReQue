@@ -170,13 +170,13 @@ def con_t2i(df):
     return df
 
 if __name__ == "__main__":
-    df_results=preprocess_data('../../qe/output/trec09mq/topics.trec09mq.bm25.map.dataset.csv','./queryclasses')
+    df_results=preprocess_data('./toy/toy_topics.trec09mq.bm25.map.dataset.csv','./toy/toy_queryclasses')
     splits = create_evaluation_splits(len(df_results), 5)
-    feature_sets = [['bert'], ['querytype', 'bert']]
     con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv')
     #the df contain both refinemnets and qtypes indexes
     df=con_t2i(con_r2i(df_results,'../../qe/output/trec09mq/topics.trec09mq.bm25.map.all.csv'))
-    #feature_sets = [['w2v'], ['bert'], ['w2v','bert'], ['userid', 'w2v'], ['userid', 'bert'], ['userid', 'w2v','bert']]
+    #feature_sets = [['w2v'], ['w2v'], ['w2v','bert'], ['querytype', 'w2v'], ['querytype', 'bert'], ['querytype', 'w2v','bert']]
+    feature_sets = [['querytype','bert']]
     for feature_set in feature_sets:
         feature_set_str = '.'.join(feature_set)
         main(splits, df['abstractqueryexpansion'], df['method.1'], df['Class'],feature_set, f'./results.npz')
