@@ -347,7 +347,7 @@ Given a gold standard dataset which is built for an original query dataset for a
 
 
 ## Authors
-[Hossein Fani](https://sites.google.com/site/hosseinfani/)<sup>1</sup>, [Negar Arabzadeh](https://github.com/Narabzad)<sup>2</sup>, [Mahtab Tamannaee](https://github.com/mtamannaee)<sup>2</sup>, [Fattane Zarrinkalam](http://ls3.rnet.ryerson.ca/people/fattane_zarrinkalam/)<sup>2</sup>, [Jamil Samouh](https://github.com/jamilsamouh)<sup>2</sup>, [Samad Paydar](http://s-paydar.profcms.um.ac.ir/)<sup>2</sup> and [Ebrahim Bagheri](https://www.ee.ryerson.ca/~bagheri/)<sup>2</sup>
+[Hossein Fani](https://hosseinfani.github.io/)<sup>1</sup>, [Negar Arabzadeh](https://github.com/Narabzad)<sup>2</sup>, [Mahtab Tamannaee](https://github.com/mtamannaee)<sup>2</sup>, [Fattane Zarrinkalam](http://ls3.rnet.ryerson.ca/people/fattane_zarrinkalam/)<sup>2</sup>, [Jamil Samouh](https://github.com/jamilsamouh)<sup>2</sup>, [Samad Paydar](http://s-paydar.profcms.um.ac.ir/)<sup>2</sup> and [Ebrahim Bagheri](https://www.ee.ryerson.ca/~bagheri/)<sup>2</sup>
 
 <sup><sup>1</sup>School of Computer Science, Faculty of Science, University of Windsor, ON, Canada.</sup>
 
