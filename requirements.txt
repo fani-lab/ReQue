@@ -1,6 +1,7 @@
+#python3.8
 anserini
 community
-gensim
+gensim==4.*
 networkx
 nltk
 pandas
@@ -19,7 +20,7 @@ tokenizers==0.9.4
 tqdm==4.45.0
 transformers==4.0.0
 sentencepiece==0.1.9
-pyserini==0.10.0.1
+pyserini
 prettytable==2.1.0
 seaborn
 matplotlib

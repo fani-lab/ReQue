@@ -2,8 +2,8 @@
 import os, traceback, math, threading, time
 import pandas as pd
 import argparse
-from pyserini.search import querybuilder
-from pyserini.search import SimpleSearcher
+from pyserini.search.lucene import querybuilder
+from pyserini.search.lucene import LuceneSearcher
 
 #build anserini (maven) for doing A) indexing, B) information retrieval, and C) evaluation
 #A) INDEX DOCUMENTS
@@ -62,7 +62,7 @@ def search(expander, rankers, topicreader, index, anserini, output):
 
             Q_pred = '{}.{}.{}.txt'.format(output, model_name, utils.get_ranker_name(ranker))
             q_dic={}
-            searcher = SimpleSearcher(index)
+            searcher = LuceneSearcher(index)
             if ranker =='-bm25':
                 searcher.set_bm25(0.9, 0.4)
             elif ranker =='-qld':
@@ -98,19 +98,16 @@ def search(expander, rankers, topicreader, index, anserini, output):
                             pass
                 run_file.close()
 
-            elif topicreader=='TsvString':
-                run_file=open(Q_pred,'w')
-                qlines=open(Q_filename,'r').readlines()
-
-                for line in qlines:
-                    retrieved_docs=[]
-                    qid,qtext=line.split('\t')
-                    hits = searcher.search(qtext,k=1000)
-                    for i in range(len(hits)):
-                        if hits[i].docid not in retrieved_docs:
-                            retrieved_docs.append(hits[i].docid)
-                            run_file.write(f'{qid} Q0  {hits[i].docid:15} {i+1:2} {hits[i].score:.5f} Pyserini\n')
-                run_file.close()
+            elif topicreader=='TsvString' or topicreader == 'TsvInt':
+                with open(Q_pred, 'w', encoding='UTF-8') as run_file, open(Q_filename,'r', encoding='UTF-8') as qlines:
+                    for line in qlines.readlines():
+                        retrieved_docs=[]
+                        qid, qtext = line.split('\t')
+                        hits = searcher.search(qtext, k=1000)
+                        for i in range(len(hits)):
+                            if hits[i].docid not in retrieved_docs:
+                                retrieved_docs.append(hits[i].docid)
+                                run_file.write(f'{qid} Q0  {hits[i].docid:15} {i+1:2} {hits[i].score:.5f} Pyserini\n')
 
             else:
                 cli_cmd = '\"{}\" {} -threads 44 -topicreader {} -index {} -topics {} -output {}'.format(rank_cmd, ranker, topicreader, index, Q_filename, Q_pred)
@@ -171,7 +168,7 @@ def aggregate(expanders, rankers, metrics, output):
 
 def build(input, expanders, rankers, metrics, output):
     base_model_name = AbstractQExpander().get_model_name()
-    df = pd.read_csv(input)
+    df = pd.read_csv(input, encoding='UTF-8')
     ds_df = df.iloc[:, :1+1+len(rankers)*len(metrics)]#the original query info
     ds_df['star_model_count'] = 0
     for idx, row in df.iterrows():
@@ -205,7 +202,7 @@ def build(input, expanders, rankers, metrics, output):
         else:
             ds_df.loc[idx, 'star_model_count'] = 0
     filename = '{}.{}.{}.dataset.csv'.format(output, '.'.join([utils.get_ranker_name(r) for r in rankers]), '.'.join(metrics))
-    ds_df.to_csv(filename, index=False)
+    ds_df.to_csv(filename, index=False, encoding='UTF-8')
     return filename
 
 def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
@@ -261,6 +258,21 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
     if corpus == 'trec09mq':
         topicreader = 'TsvInt'
         output_ = '{}topics.trec09mq'.format(output)
+        expanders = ef.get_nrf_expanders()
+        if rf:#local analysis
+            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_, ext_corpus=param.corpora[corpus]['extcorpus'])
+
+        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
+        for thread in threads: thread.join()
+        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
+
+        if 'build' in op:
+            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
+            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
+
+    if corpus == 'orcas':
+        topicreader = 'TsvInt'
+        output_ = '{}topics.orcas'.format(output)
         expanders = ef.get_nrf_expanders()
         if rf:#local analysis
             expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_, ext_corpus=param.corpora[corpus]['extcorpus'])
@@ -370,29 +382,20 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
 
 def addargs(parser):
     corpus = parser.add_argument_group('Corpus')
-    corpus.add_argument('--corpus', type=str, choices=['dbpedia','antique','robust04', 'gov2', 'clueweb09b', 'clueweb12b13'], required=True, help='The corpus name; required; (example: robust04)')
+    corpus.add_argument('--corpus', type=str, choices=['dbpedia','antique','robust04', 'gov2', 'clueweb09b', 'clueweb12b13','trec09mq','orcas'], required=True, help='The corpus name; required; (example: robust04)')
 
     gold = parser.add_argument_group('Gold Standard Dataset')
     gold.add_argument('--output', type=str, required=True, help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
-    gold.add_argument('--ranker', type=str, choices=['bm25', 'qld'], default='bm25', help='The ranker name (default: bm25)')
-    gold.add_argument('--metric', type=str, choices=['map'], default='map', help='The evaluation metric name (default: map)')
+    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld'], default=['bm25', 'qld'], help='The ranker names (default: bm25 qld)')
+    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg'], default=['map', 'ndcg'], help='The evaluation metric names (default: map ndcg)')
 
-# # python -u main.py --corpus robust04 --output ./output/robust04/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
-# # python -u main.py --corpus robust04 --output ./output/robust04/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
-
-# # python -u main.py --corpus gov2 --output ./output/gov2/ --ranker bm25 --metric map 2>&1 | tee gov2.bm25.log &
-# # python -u main.py --corpus gov2 --output ./output/gov2/ --ranker qld --metric map 2>&1 | tee gov2.qld.log &
-
-# # python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker bm25 --metric map 2>&1 | tee clueweb09b.bm25.log &
-# # python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker qld --metric map 2>&1 | tee clueweb09b.qld.log &
-
-# # python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker bm25 --metric map 2>&1 | tee clueweb12b13.bm25.log &
-# # python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker qld --metric map 2>&1 | tee clueweb12b13.qld.log &
-
-# # python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
-# # python -u main.py --corpus antique --output ./output/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
-
-# # python -u main.py --corpus trec09mq --output ./output/trec09mq/ --ranker bm25 --metric map 2>&1 | tee trec09mq.bm25.log &
+# # python -u main.py --corpus robust04 --output ./output/robust04/ --rankers bm25 qld --metrics map ndcg 2>&1 | tee robust04.log &
+# # python -u main.py --corpus gov2 --output ./output/gov2/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee gov2.bm25.log &
+# # python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee clueweb09b.log &
+# # python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee clueweb12b13.log &
+# # python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee antique.log &
+# # python -u main.py --corpus trec09mq --output ./output/trec09mq/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee trec09mq.log &
+# # python -u main.py --corpus orcas --output ./output/orcas/ --ranker bm25 qld --metrics map ndcg 2>&1 | tee trec09mq.log &
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ReQue (Refining Queries)')
@@ -403,8 +406,8 @@ if __name__ == "__main__":
     ## op: determines the steps in the pipeline. op=['generate', 'search', 'evaluate', 'build']
 
     run(corpus=args.corpus.lower(),
-        rankers=['-' + args.ranker.lower()],
-        metrics=[args.metric.lower()],
+        rankers=['-' + ranker for ranker in args.rankers],
+        metrics=args.metrics,
         output=args.output,
         rf=True,
         op=param.ReQue['op'])

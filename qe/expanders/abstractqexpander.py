@@ -28,8 +28,8 @@ class AbstractQExpander:
 
         Q_ = pd.DataFrame()
 
-        with open(Qfilename, 'r') as Qfile:
-            with open(Q_filename, 'w') as Q_file:
+        with open(Qfilename, 'r', encoding='UTF-8') as Qfile:
+            with open(Q_filename, 'w',encoding='UTF-8') as Q_file:
                 print('INFO: MAIN: {}: Expanding queries in {} ...'.format(self.get_model_name(), Qfilename))
                 for line in Qfile:
                     if '<num>' in line:
@@ -70,18 +70,18 @@ class AbstractQExpander:
                             Q_ = Q_.append({model_name: q_}, ignore_index=True)
                             print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
-                    elif len(line.split('\t')) > 2: #for tsv files
+                    elif len(line.split('\t')) >= 2: #for tsv files
                         qid = int(line.split('\t')[0].rstrip())
                         q=line.split('\t')[1].rstrip()
                         try:
                             q_ = self.get_expanded_query(q, [qid])
                             q_ = utils.clean(q_) if clean else q_
                         except:
-                            print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
+                            print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q).encode('UTF-8'))
                             print(traceback.format_exc())
                             q_ = q
                         Q_ = Q_.append({model_name: q_}, ignore_index=True)
-                        print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
+                        print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_).encode('UTF-8'))
                         Q_file.write(str(qid)+'\t'+ str(q_) + '\n')
                     else:
                         Q_file.write(line)
@@ -90,7 +90,7 @@ class AbstractQExpander:
     def read_expanded_queries(self, Q_filename):
         model_name = self.get_model_name().lower()
         Q_ = pd.DataFrame(columns=['qid'], dtype=int)
-        with open(Q_filename, 'r') as Q_file:
+        with open(Q_filename, 'r',encoding='UTF-8') as Q_file:
             print('INFO: MAIN: {}: Reading expanded queries in {} ...'.format(self.get_model_name(), Q_filename))
             for line in Q_file:
                 q_ = None
@@ -104,7 +104,7 @@ class AbstractQExpander:
                     qid = line[s:e].strip()
                 elif line[2:9] == '<query>':  # for clueweb09b & clueweb12b13
                     q_ = line[9:-9] + ' '
-                elif len(line.split('\t')) > 2:
+                elif len(line.split('\t')) >= 2:
                     qid = line.split('\t')[0].rstrip()
                     q_= line.split('\t')[1].rstrip()
                 else:

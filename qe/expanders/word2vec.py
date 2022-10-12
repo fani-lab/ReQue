@@ -27,7 +27,7 @@ class Word2Vec(AbstractQExpander):
         for qw in upd_query:
             found_flag = False
             qw_stem = ps.stem(qw)
-            if qw in Word2Vec.word2vec.vocab:
+            if qw in Word2Vec.word2vec.key_to_index: #in gensim 4.0 vocab change to key_to_index
                 w = Word2Vec.word2vec.most_similar(positive=[qw], topn=self.topn)
                 for u,v in w:
                     u_stem=ps.stem(u)
