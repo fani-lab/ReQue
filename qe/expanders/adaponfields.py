@@ -34,7 +34,7 @@ from cmn import utils
 class AdapOnFields(OnFields):
 
     def __init__(self, ranker, prels, anserini, index, w_t, w_a,corpus_size, collection_tokens,  
-                 ext_index, ext_corpus,ext_prels, ext_collection_tokens, ext_w_t, ext_w_a, ext_corpus_size,
+                 ext_index, ext_corpus, ext_collection_tokens, ext_w_t, ext_w_a, ext_corpus_size,
                  replace=False, topn=3, topw=10, adap=False):
         OnFields.__init__(self, ranker, prels, anserini, index, w_t, w_a,corpus_size, topn=topn, replace=replace, topw=topw, adap=adap)
 
@@ -42,7 +42,6 @@ class AdapOnFields(OnFields):
 
         self.ext_index=ext_index
         self.ext_corpus=ext_corpus
-        self.ext_prels=ext_prels
         self.ext_collection_tokens=ext_collection_tokens # number of tokens in the external collection
         self.ext_w_t=ext_w_t
         self.ext_w_a=ext_w_a
@@ -63,7 +62,7 @@ class AdapOnFields(OnFields):
         
         elif Preferred_expansion =="ExternalExpansionPreferred":
             self.adap = True
-            self.prels = self.ext_prels
+            self.prels = None#when adap is True, no need for prels since it does the retrieval again!
             self.index = self.ext_index
             self.corpus = self.ext_corpus
             self.w_t = self.ext_w_t
@@ -144,7 +143,7 @@ if __name__ == "__main__":
     qe = AdapOnFields(ranker='bm25',
                       corpus='robust04',
                       index='../anserini/lucene-index.robust04.pos+docvectors+rawdocs',
-                      prels='../ds/qe/robust04/topics.robust04.abstractqueryexpansion.bm25.txt',
+                      prels='./output/robust04/topics.robust04.abstractqueryexpansion.bm25.txt',
                       anserini='../anserini/',
                       w_t=tuned_weights['robust04']['w_t'],
                       w_a=tuned_weights['robust04']['w_a'],
@@ -152,7 +151,7 @@ if __name__ == "__main__":
                       collection_tokens=number_of_tokens_in_collections['robust04'],
                       ext_corpus='gov2',
                       ext_index='../anserini/lucene-index.gov2.pos+docvectors+rawdocs',
-                      ext_prels='../ds/qe/gov2/topics.terabyte04.701-750.abstractqueryexpansion.bm25.txt',
+                      ext_prels='./output/gov2/topics.terabyte04.701-750.abstractqueryexpansion.bm25.txt',
                       ext_collection_tokens = number_of_tokens_in_collections['gov2'],
                       ext_corpus_size=total_documents_number['gov2'],
                       ext_w_t= tuned_weights['gov2']['w_t'],

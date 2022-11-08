@@ -1,5 +1,5 @@
-# A Toolkit for Generating Query Refinement Gold Standards
-## [Online Video Tutorial](https://watch.wave.video/reque-a-toolkit-for-generating-query-refinement-gold-standards-5ef6c24046e0fb000c354004)
+## Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
+:movie_camera: [Video Playlist](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS): 1) [Introduction](https://youtu.be/ydO-LVhzVb8) -> 2) [Installation](https://youtu.be/Vb45ALbYfy4) ->3) [Extension](https://youtu.be/vfLesv_fMGI)
 <p align="center">
     <img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram">
     <br>
@@ -53,7 +53,7 @@ The following source folders are to be populated by the query dataset `Q`, judme
 |       # wiki-anchor-text-en-ttl-300d.vec.vectors.npy
 ```
 
-[`anserini/`](./anserini/): source folder for [anserini](https://github.com/castorini/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
+[`anserini/`](./anserini/): source folder for [anserini](https://github.com/hosseinfani/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
 
 ```
 +---anserini 
@@ -86,11 +86,11 @@ The following source folders are to be populated by the query dataset `Q`, judme
 ### Target Folders
 The target folders are the output repo for the expanders, gold standard datasets, and benchmarks.
 
-[`ds/qe/`](./ds/qe/): output folder for expanders and **the gold standard datasets.**
+[`qe/output/`](./qe/output/): output folder for expanders and **the gold standard datasets.**
 
 ```
-+---ds
-|   +---qe
++---qe
+|   +---output
 |   |   +---clueweb09b
 |   |   |       topics.clueweb09b.1-200.bm25.map.dataset.csv
 |   |   |       topics.clueweb09b.1-200.qld.map.dataset.csv
@@ -112,37 +112,32 @@ The target folders are the output repo for the expanders, gold standard datasets
 
 ```
 
-[`ds/qe/eval/`](./ds/qe/eval): output folder for the reports on performance of expanders and statistics about the gold standard datasets.
+[`qe/output/eval/`](./qe/output/eval): output folder for the reports on performance of expanders and statistics about the gold standard datasets.
 
 ```
-+---ds
-|   +---qe
++---qe
+|   +---output
 |   |   \---eval
 |   |           overall.stat.csv
 ```
 
-[`ds/qs/`](./ds/qs/): output folder for suggesters. This folder contains the benchmark results only and the trained models are ignored due to their sizes.
+[`qs/output/`](./qs/output/): output folder for suggesters. This folder contains the benchmark results only and the trained models are ignored due to their sizes.
 
 ```
-+---ds
-|   +---qs
-|   |   +---all.topn5
-|   |   +---clueweb09b.topn5
-|   |   +---clueweb12b13.topn5
-|   |   +---gov2.topn5
-|   |   +---robust04.topn5
-|   |   +---antique.topn5
-|   |   \---dbpedia.topn5
++---qs
+|   \---output
+|   |       agg_results.csv
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/castorini/anserini) (java 11+)
+### [anserini](https://github.com/hosseinfani/anserini) (java 11+)
 ### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
 ### python 3.7 and the following packages:
 ```
 pandas, scipy, numpy, requests, urllib
 networkx, community, python-louvain
-gensim, tagme, bs4, pywsd, nltk [stem, tokenize, corpus]
+gensim, tagme, bs4, pywsd, 
+nltk -> nltk.download(['averaged_perceptron_tagger','stopwords','wordnet', 'punkt'])
 pyserini, pygaggle, pytorch
 ```
 For the full list, refer to [`environment.yml`](./environment.yml). A conda environment, namely `ReQue`, can be created and activated by the following commands:
@@ -179,7 +174,7 @@ $> conda env create -f environment.yml
 $> conda activate ReQue
 ```
 
-[Anserini](https://github.com/castorini/anserini) must be installed in [`anserini/`](./anserini/) for indexing, information retrieval and ranking, and evaluation on the original query datasets. The documents in the corpus must be indexed, e.g., by the following commands for `Robust04` (already available [here](https://git.uwaterloo.ca/jimmylin/anserini-indexes/raw/master/index-robust04-20191213.tar.gz)), `Gov2`, `ClueWeb09-B`, and `ClueWeb12-B13`.
+[Anserini](https://github.com/hosseinfani/anserini) must be installed in [`anserini/`](./anserini/) for indexing, information retrieval and ranking, and evaluation on the original query datasets. The documents in the corpus must be indexed, e.g., by the following commands for `Robust04` (already available [here](https://git.uwaterloo.ca/jimmylin/anserini-indexes/raw/master/index-robust04-20191213.tar.gz)), `Gov2`, `ClueWeb09-B`, and `ClueWeb12-B13`.
 
 For `Antique` dataset, we first need to convert the antique tsv files into tsv into Anserini's jsonl files as per instructed [here](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md), 
 
@@ -202,7 +197,7 @@ Refining queries is done using all [expanders](./qe/cmn/expander_factory.py) by 
 
 `--corpus`: The name of the original query dataset whose queries are to be expanded and paired with the refined queries, if any, which could be one of {`robust04`, `gov2`, `clueweb09b`, `clueweb12b13`, `antique`, `dbpedia`}. Required;
 
-`--output`: The output path for the gold standard dataset, e.g., [`../ds/qe/robust04/`](./ds/qe/robust04/). Required; 
+`--output`: The output path for the gold standard dataset, e.g., [`qe/output/robust04/`](./qe/output/robust04/). Required; 
 
 `--ranker`: The ranker name which could be any of the available ranker models in [anserini](https://github.com/castorini/anserini)([SearchCollection](https://github.com/matthew-z/Anserini/blob/master/src/main/java/io/anserini/search/SearchArgs.java)). ReQue has been tested for {`bm25`,`qld`} (default: bm25);
 
@@ -225,28 +220,28 @@ There are other required parameters that should be set in [params.py](https://gi
 The sample running commands are:
 
 ```
-$> python -u main.py --corpus robust04 --output ../ds/qe/robust04/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
-$> python -u main.py --corpus robust04 --output ../ds/qe/robust04/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
+$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
+$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
 
-$> python -u main.py --corpus gov2 --output ../ds/qe/gov2/ --ranker bm25 --metric map 2>&1 | tee gov2.bm25.log &
-$> python -u main.py --corpus gov2 --output ../ds/qe/gov2/ --ranker qld --metric map 2>&1 | tee gov2.qld.log &
+$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker bm25 --metric map 2>&1 | tee gov2.bm25.log &
+$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker qld --metric map 2>&1 | tee gov2.qld.log &
 
-$> python -u main.py --corpus clueweb09b --output ../ds/qe/clueweb09b/ --ranker bm25 --metric map 2>&1 | tee clueweb09b.bm25.log &
-$> python -u main.py --corpus clueweb09b --output ../ds/qe/clueweb09b/ --ranker qld --metric map 2>&1 | tee clueweb09b.qld.log &
+$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker bm25 --metric map 2>&1 | tee clueweb09b.bm25.log &
+$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker qld --metric map 2>&1 | tee clueweb09b.qld.log &
 
-$> python -u main.py --corpus clueweb12b13 --output ../ds/qe/clueweb12b13/ --ranker bm25 --metric map 2>&1 | tee clueweb12b13.bm25.log &
-$> python -u main.py --corpus clueweb12b13 --output ../ds/qe/clueweb12b13/ --ranker qld --metric map 2>&1 | tee clueweb12b13.qld.log &
+$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker bm25 --metric map 2>&1 | tee clueweb12b13.bm25.log &
+$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker qld --metric map 2>&1 | tee clueweb12b13.qld.log &
 
-$> python -u main.py --corpus antique --output ../ds/qe/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
-$> python -u main.py --corpus antique --output ../ds/qe/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
+$> python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
+$> python -u main.py --corpus antique --output ./output/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
 
-$> python -u main.py --corpus dbpedia --output ../ds/qe/dbpedia/ --ranker bm25 --metric map 2>&1 | tee dbpedia.bm25.log &
-$> python -u main.py --corpus dbpedia --output ../ds/qe/dbpedia/ --ranker qld --metric map 2>&1 | tee dbpedia.qld.log &
+$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker bm25 --metric map 2>&1 | tee dbpedia.bm25.log &
+$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker qld --metric map 2>&1 | tee dbpedia.qld.log &
 ```
 
-## Gold Standard Dataset: [`ds/qe/`](./ds/qe/)
+## Gold Standard Dataset: [`qe/output/`](./qe/output/)
 ### Path
-The gold standard dataset for each original query dataset is generated in `ds/qe/{original query dataset}/*.{ranker}.{metric}.dataset.csv`.
+The gold standard dataset for each original query dataset is generated in `qe/output/{original query dataset}/*.{ranker}.{metric}.dataset.csv`.
 
 ### File Structure
 The columns in the gold standard dataset are:
@@ -268,7 +263,7 @@ The columns in the gold standard dataset are:
 and `0 <= i <= star_model_count`. **The refined queries are listed in order of descending values.**
 
 ### Example
-The golden standard dataset for `Robust04` using the ranker `bm25` and based on the evaluation metric `map` (mean average precision) is [`ds/qe/robust04/topics.robust04.bm25.map.dataset.csv`](./ds/qe/robust04/topics.robust04.bm25.map.dataset.csv) and, for instance, includes:
+The golden standard dataset for `Robust04` using the ranker `bm25` and based on the evaluation metric `map` (mean average precision) is [`qe/output/robust04/topics.robust04.bm25.map.dataset.csv`](./qe/output/robust04/topics.robust04.bm25.map.dataset.csv) and, for instance, includes:
 
 ```
 311,Industrial Espionage,0.4382,1,relevancefeedback.topn10.bm25,0.489,industrial espionage compani bnd mr foreign intellig samsung vw mossad
@@ -304,7 +299,7 @@ By passing `all` as the name of the original query dataset, it is also possible 
 $> python -u qs/main.py 5 all 2>&1 | tee all.topn5.log &
 ```
 ## Performance Evaluation on Generated Gold Standard Datasets for the TREC collections
-### Statistics: [`ds/qe/eval/`](./ds/qe/eval) 
+### Statistics: [`qe/output/eval/`](./qe/output/eval) 
 Statistics shows that for all the rankers, at least `1.44` refined queries exists on average for an original query while the best performance is for `Robust04` over `bm25` with `4.24`. 
 
 |            |avg \|Rqrm\||        |
@@ -330,10 +325,10 @@ The average `map` improvement rate is also reported, given the best refined quer
 |dbpedia     |xxxx                              |xxxx|
 
 
-### Benchmarks: [`ds/qs/`](./ds/qs)
+### Benchmarks: [`qs/output/`](./qs/output/)
 For each gold standard dataset belonging to ReQue, given the pairs `{(q, q') | q ∈ Q, q' ∈ Rqrm}`, the performance of three state-of-the-art supervised query refinement methods including [seq2seq](https://nlp.stanford.edu/pubs/emnlp15_attn.pdf), [acg](https://arxiv.org/abs/1708.03418)(seq2seq + attn.), [hred-qs](https://arxiv.org/abs/1507.02221) after running the models for 100 epochs has been reported in terms of rouge-l and bleu.  As shown, in all the cases, [acg](https://arxiv.org/abs/1708.03418)(seq2seq + attn.) and [hred-qs](https://arxiv.org/abs/1507.02221) outperform [seq2seq](https://nlp.stanford.edu/pubs/emnlp15_attn.pdf) in terms of all the evaluation metric,  in most cases, [acg](https://arxiv.org/abs/1708.03418)(seq2seq + attn.) that uses the attention mechanism outperform [hred-qs](https://arxiv.org/abs/1507.02221). The similar observation is also reported by [Ahmad et al. Context Attentive Document Ranking and Query Suggestion](https://github.com/wasiahmad/context_attentive_ir) and [Dehghani et al. Learning to Attend, Copy, and Generate for Session-Based Query Suggestion](https://dl.acm.org/doi/pdf/10.1145/3132847.3133010). 
 
-Given a gold standard dataset which is built for an original query dataset for a ranker and a metric, the full report can be found here: `ds/qs/{original query dataset}.topn5/topics.{original query dataset}.{ranker}.{metric}.results.csv`. For instance, for [`ds/qe/robust04/topics.robust04.bm25.map/dataset.csv`](./ds/qe/robust04/topics.robust04.bm25.map.dataset.csv) the benchmarks are in [`ds/qs/robust04.topn5/topics.robust04.bm25.map/results.csv`](./ds/qs/robust04.topn5/topics.robust04.bm25.map/results.csv)
+Given a gold standard dataset which is built for an original query dataset for a ranker and a metric, the full report can be found here: `ds/qs/{original query dataset}.topn5/topics.{original query dataset}.{ranker}.{metric}.results.csv`. For instance, for [`qe/output/robust04/topics.robust04.bm25.map/dataset.csv`](./qe/output/robust04/topics.robust04.bm25.map.dataset.csv) the benchmarks are in [`ds/qs/robust04.topn5/topics.robust04.bm25.map/results.csv`](./ds/qs/robust04.topn5/topics.robust04.bm25.map/results.csv)
 |				|			|seq2seq	|			|acg		|		|hred-qs	|		|
 |---------------|-----------|-----------|-----------|-----------|-------|-----------|-------|
 |				|ranker		|rouge-l	|bleu		|rouge-l	|bleu	|rouge-l	|bleu 	|
@@ -352,7 +347,7 @@ Given a gold standard dataset which is built for an original query dataset for a
 
 
 ## Authors
-[Hossein Fani](https://sites.google.com/site/hosseinfani/)<sup>1</sup>, [Negar Arabzadeh](https://github.com/Narabzad)<sup>2</sup>, [Mahtab Tamannaee](https://github.com/mtamannaee)<sup>2</sup>, [Fattane Zarrinkalam](http://ls3.rnet.ryerson.ca/people/fattane_zarrinkalam/)<sup>2</sup>, [Jamil Samouh](https://github.com/jamilsamouh)<sup>2</sup>, [Samad Paydar](http://s-paydar.profcms.um.ac.ir/)<sup>2</sup> and [Ebrahim Bagheri](https://www.ee.ryerson.ca/~bagheri/)<sup>2</sup>
+[Hossein Fani](https://hosseinfani.github.io/)<sup>1</sup>, [Negar Arabzadeh](https://github.com/Narabzad)<sup>2</sup>, [Mahtab Tamannaee](https://github.com/mtamannaee)<sup>2</sup>, [Fattane Zarrinkalam](http://ls3.rnet.ryerson.ca/people/fattane_zarrinkalam/)<sup>2</sup>, [Jamil Samouh](https://github.com/jamilsamouh)<sup>2</sup>, [Samad Paydar](http://s-paydar.profcms.um.ac.ir/)<sup>2</sup> and [Ebrahim Bagheri](https://www.ee.ryerson.ca/~bagheri/)<sup>2</sup>
 
 <sup><sup>1</sup>School of Computer Science, Faculty of Science, University of Windsor, ON, Canada.</sup>
 
@@ -374,6 +369,26 @@ Given a gold standard dataset which is built for an original query dataset for a
   year      = {2020},
   url       = {https://doi.org/10.1145/3340531.3412775},
   doi       = {10.1145/3340531.3412775}
+  }
+```
+
+```
+@inproceedings{ReQueDemo,
+  author    = {Hossein Fani and
+               Mahtab Tamannaee and
+               Fattane Zarrinkalam and
+               Jamil Samouh and
+               Samad Paydar and
+               Ebrahim Bagheri},
+  title     = {An Extensible Toolkit of Query Refinement Methods and Gold Standard Dataset Generation},
+  booktitle = {{ECIR} '21: Advances in Information Retrieval - 43rd European Conference on IR Research},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12657},
+  year      = {2021},
+  pages     = {498--503},
+  publisher = {{Springer}},
+  url       = {https://doi.org/10.1007/978-3-030-72240-1_54},
+  doi       = {10.1007/978-3-030-72240-1_54}
   }
 ```
 
