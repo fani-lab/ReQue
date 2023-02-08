@@ -37,7 +37,7 @@ from cmn import utils
 from cmn import expander_factory as ef
 from expanders.abstractqexpander import AbstractQExpander
 from expanders.onfields import OnFields
-from expanders.bertqe import BertQE
+#from expanders.bertqe import BertQE
 
 def generate(Qfilename, expander, output):
     df = pd.DataFrame()
@@ -68,7 +68,7 @@ def search(expander, rankers, topicreader, index, anserini, output):
             elif ranker =='-qld':
                 searcher.set_qld()
 
-            if isinstance(expander, OnFields) or isinstance(expander, BertQE) :
+            if isinstance(expander, OnFields)  :#or isinstance(expander, BertQE)
                 run_file=open(Q_pred,'w')
                 list_of_raw_queries=utils.get_raw_query(topicreader,Q_filename)
                 for qid,query in list_of_raw_queries.items():
