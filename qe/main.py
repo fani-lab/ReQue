@@ -120,7 +120,6 @@ def search(expander, rankers, topicreader, index, anserini, output):
 
 def evaluate(expander, Qrels, rankers, metrics, trec_eval, output):
     # Evaluation using trec_eval
-    # eval_cmd = '{}eval/trec_eval.9.0.4/trec_eval'.format(anserini)
     eval_cmd = '{}'.format(trec_eval)
     model_errs = dict()
 

@@ -42,7 +42,7 @@ anserini = {
 
 trec_eval = {
     # 'path': '../pyserini/tools/eval/trec_eval.9.0.4',
-    'path': '{}/eval/trec_eval.9.0.4'.format(pyserini['path'])
+    'path': '{}eval/trec_eval'.format(anserini['path'])
 }
 
 corpora = {
