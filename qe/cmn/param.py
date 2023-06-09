@@ -6,13 +6,13 @@ ReQue = {
     'op': ['generate', 'search', 'evaluate'],#['generate', 'search', 'evaluate', 'build']
     'expanders': {
         'SenseDisambiguation'   : 0,
-        'Thesaurus'             :0,#done-half
+        'Thesaurus'             : 0,#done-half
         'Wordnet'               : 0,#done
         'Conceptnet'            : 0,#done-half
         'Tagmee'                : 0,#done-half
 
-        'Word2Vec'              :1,#done
-        'Glove'                 :1,#done
+        'Word2Vec'              : 1,#done
+        'Glove'                 : 1,#done
         'Anchor'                : 0,#xdone
         'Wiki'                  : 0,#xdone
 
@@ -38,6 +38,11 @@ ReQue = {
 
 anserini = {
     'path': '../anserini/'
+}
+
+trec_eval = {
+    # 'path': '../pyserini/tools/eval/trec_eval.9.0.4',
+    'path': '{}/eval/trec_eval.9.0.4'.format(pyserini['path'])
 }
 
 corpora = {

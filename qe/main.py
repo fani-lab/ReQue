@@ -118,9 +118,10 @@ def search(expander, rankers, topicreader, index, anserini, output):
         print('INFO: MAIN: SEARCH: There has been error in {}!\n{}'.format(expander, traceback.format_exc()))
         raise
 
-def evaluate(expander, Qrels, rankers, metrics, anserini, output):
+def evaluate(expander, Qrels, rankers, metrics, trec_eval, output):
     # Evaluation using trec_eval
-    eval_cmd = '{}eval/trec_eval.9.0.4/trec_eval'.format(anserini)
+    # eval_cmd = '{}eval/trec_eval.9.0.4/trec_eval'.format(anserini)
+    eval_cmd = '{}'.format(trec_eval)
     model_errs = dict()
 
     model_name = expander.get_model_name()
@@ -211,7 +212,7 @@ def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
         try:
             if 'generate' in op: generate(Qfilename=param.corpora[corpus]['topics'], expander=expander, output=output_)
             if 'search' in op: search(expander=expander, rankers=rankers, topicreader=topicreader, index=param.corpora[corpus]['index'], anserini=param.anserini['path'], output=output_)
-            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers, metrics=metrics, anserini=param.anserini['path'], output=output_)
+            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers, metrics=metrics, trec_eval=param.trec_eval['path'], output=output_)
         except:
             print(f'INFO: MAIN: THREAD: {threading.currentThread().getName()}: There has been error in {expander}!\n{traceback.format_exc()}')
             exceptions[expander.get_model_name()] = traceback.format_exc()
