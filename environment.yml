@@ -4,15 +4,23 @@ channels:
   - conda-forge
 dependencies:
   - python=3.8
+  - pip=19.0.3
   - pandas=0.23.3
   - numpy>=1.18.1
   - requests=2.22.0
   - urllib3=1.25.8
   - networkx=2.2
   - nltk=3.4
-  - pip=19.0.3
+  - seaborn
+  - spacy==2.2.4
+  # spacy-transformers
+  # python -m spacy download en_core_web_trf
+  # python -m spacy download en_core_web_sm
+  - tqdm==4.45.0
+  - transformers==4.0.0 # needed if augmentation via backtranslation
+  - scikit-learn>=0.22
+  - gensim==4.*
   - pip:
-    - gensim==4.*
     - scipy==1.4.*
     - pywsd==1.2.4
     - wn==0.0.23
@@ -23,16 +31,11 @@ dependencies:
     - python-louvain==0.13
     - coloredlogs==14.0
     - pydantic==1.5
-    - scikit-learn>=0.22
-    - spacy==2.2.4
     - tensorboard>=2.1.0
     - tensorflow>=2.2.0rc1
     - tokenizers==0.9.4
-    - tqdm==4.45.0
-    - transformers==4.0.0
     - sentencepiece==0.1.94
     - torch==1.7.1
     - pyserini
     - prettytable==2.1.0
-    - seaborn
     - matplotlib
