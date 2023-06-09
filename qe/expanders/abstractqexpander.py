@@ -4,6 +4,8 @@ import sys
 sys.path.extend(['../qe'])
 
 from cmn import utils
+
+
 class AbstractQExpander:
     def __init__(self, replace=False, topn=None):
         self.replace = replace
@@ -95,13 +97,16 @@ class AbstractQExpander:
     def read_expanded_queries(self, Q_filename):
         model_name = self.get_model_name().lower()
         Q_ = pd.DataFrame(columns=['qid'], dtype=int)
+        is_tag_file = False
         with open(Q_filename, 'r',encoding='UTF-8') as Q_file:
             print('INFO: MAIN: {}: Reading expanded queries in {} ...'.format(self.get_model_name(), Q_filename))
             for line in Q_file:
                 q_ = None
+                if '<top>' in line and not is_tag_file:  # for files with tag
+                    is_tag_file = True
                 if '<num>' in line:
                     qid = line[line.index(':') + 1:].strip()
-                elif line[:7] == '<title>':#for robust & gov2
+                elif line[:7] == '<title>':  # for robust & gov2
                     q_ = line[8:].strip() + ' '
                 elif '<topic' in line:
                     s = line.index('\"') + 1
@@ -109,7 +114,7 @@ class AbstractQExpander:
                     qid = line[s:e].strip()
                 elif line[2:9] == '<query>':  # for clueweb09b & clueweb12b13
                     q_ = line[9:-9] + ' '
-                elif len(line.split('\t')) >= 2:
+                elif len(line.split('\t')) >= 2 and not is_tag_file:
                     qid = line.split('\t')[0].rstrip()
                     q_= line.split('\t')[1].rstrip()
                 else:
@@ -155,7 +160,7 @@ if __name__ == "__main__":
     #              SenseDisambiguation(),
     #              Conceptnet(),
     #              Thesaurus(replace=True),
-                  #Wordnet(replace=True),
+    #              Wordnet(replace=True),
     #              Word2Vec('../pre/wiki-news-300d-1M.vec', topn=3, replace=True),
     #              Glove('../pre/glove.6B.300d', topn=3, replace=True),
     #              SenseDisambiguation(replace=True),
@@ -172,8 +177,8 @@ if __name__ == "__main__":
     #              Docluster(ranker='bm25', prels='./output/robust04/topics.robust04.abstractqueryexpansion.bm25.txt',anserini='../anserini/', index='../ds/robust04/index-robust04-20191213'),
     #              Termluster(ranker='bm25', prels='./output/robust04/topics.robust04.abstractqueryexpansion.bm25.txt',anserini='../anserini/', index='../ds/robust04/index-robust04-20191213'),
     #              Conceptluster(ranker='bm25', prels='./output/robust04/topics.robust04.abstractqueryexpansion.bm25.txt', anserini='../anserini/', index='../ds/robust04/index-robust04-20191213'),
-                #Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3),
-                 #Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3, replace=True)
+    #              Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3),
+    #              Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3, replace=True)
                  ]
     for expander in expanders:
         expander.write_expanded_queries(
