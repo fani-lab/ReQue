@@ -27,19 +27,21 @@ class AbstractQExpander:
         model_name = self.get_model_name().lower()
 
         Q_ = pd.DataFrame()
-
+        is_tag_file = False
         with open(Qfilename, 'r', encoding='UTF-8') as Qfile:
             with open(Q_filename, 'w',encoding='UTF-8') as Q_file:
                 print('INFO: MAIN: {}: Expanding queries in {} ...'.format(self.get_model_name(), Qfilename))
                 for line in Qfile:
-                    if '<num>' in line:
+                    # For txt files
+                    if '<top>' in line and not is_tag_file:
+                        is_tag_file = True
+                    elif '<num>' in line:
                         qid = int(line[line.index(':') + 1:])
                         Q_file.write(line)
                     elif line[:7] == '<title>':#for robust & gov2
                         q = line[8:].strip()
                         if not q:
                             q = next(Qfile).strip()
-
                         try:
                             q_ = self.get_expanded_query(q, [qid])
                             q_ = utils.clean(q_) if clean else q_
@@ -47,17 +49,17 @@ class AbstractQExpander:
                             print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
                             print(traceback.format_exc())
                             q_ = q
-
-                        Q_ = Q_.append({model_name: q_}, ignore_index=True)
+                        Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
+                        # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                         print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                         Q_file.write('<title> ' + str(q_) + '\n')
-
                     elif '<topic' in line:
                         s = line.index('\"') + 1
                         e = line.index('\"', s + 1)
                         qid = int(line[s:e])
                         Q_file.write(line)
-                    elif line[2:9] == '<query>':#for clueweb09b & clueweb12b13
+                    # For clueweb09b & clueweb12b13
+                    elif line[2:9] == '<query>':
                             q = line[9:-9]
                             try:
                                 q_ = self.get_expanded_query(q, [qid])
@@ -66,11 +68,13 @@ class AbstractQExpander:
                                 print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
                                 print(traceback.format_exc())
                                 q_ = q
-
-                            Q_ = Q_.append({model_name: q_}, ignore_index=True)
+                            Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
+                            # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                             print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
-                    elif len(line.split('\t')) >= 2: #for tsv files
+
+                    # For tsv files
+                    elif len(line.split('\t')) >= 2 and not is_tag_file:
                         qid = int(line.split('\t')[0].rstrip())
                         q=line.split('\t')[1].rstrip()
                         try:
@@ -80,7 +84,8 @@ class AbstractQExpander:
                             print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q).encode('UTF-8'))
                             print(traceback.format_exc())
                             q_ = q
-                        Q_ = Q_.append({model_name: q_}, ignore_index=True)
+                        Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
+                        # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                         print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_).encode('UTF-8'))
                         Q_file.write(str(qid)+'\t'+ str(q_) + '\n')
                     else:
@@ -110,7 +115,8 @@ class AbstractQExpander:
                 else:
                     continue
                 if q_:
-                    Q_ = Q_.append({'qid': qid, model_name: q_}, ignore_index=True)
+                    Q_ = pd.concat([Q_, pd.DataFrame([{'qid': qid, model_name: q_}])], ignore_index=True)
+                    # Q_ = Q_.append({'qid': qid, model_name: q_}, ignore_index=True)
         return Q_.astype({'qid': 'str'})
 
 if __name__ == "__main__":
