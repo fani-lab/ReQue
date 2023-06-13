@@ -37,6 +37,7 @@ def get_nrf_expanders():
     if param.ReQue['expanders']['SRemovalStemmer']: from stemmers.sstemmer import SRemovalStemmer; expanders_list.append(Stem(SRemovalStemmer()))
     if param.ReQue['expanders']['Trunc4Stemmer']: from stemmers.trunc4 import Trunc4Stemmer; expanders_list.append(Stem(Trunc4Stemmer()))
     if param.ReQue['expanders']['Trunc5Stemmer']: from stemmers.trunc5 import Trunc5Stemmer; expanders_list.append(Stem(Trunc5Stemmer()))
+    if param.ReQue['expanders']['BackTranslation']: from expanders.backtranslation import BackTranslation; expanders_list.append(BackTranslation())
     # since RF needs index and search output which depends on ir method and topics corpora, we cannot add this here. Instead, we run it individually
     # RF assumes that there exist abstractqueryexpansion files
 
