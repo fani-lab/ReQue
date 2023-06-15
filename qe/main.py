@@ -132,7 +132,7 @@ def evaluate(expander, Qrels, rankers, metrics, eval_cmd, output):
         for ranker in rankers:
             Q_pred = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.txt'
             for metric in metrics:
-                Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}
+                Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}'
                 cli_cmd = f'\"{eval_cmd}\" -q -m {metric} {Qrels} {Q_pred} > {Q_eval}'
                 print(f'{cli_cmd}\n')
                 stream = os.popen(cli_cmd)
