@@ -115,15 +115,13 @@ def search(expander, rankers, topicreader, index, anserini, output):
                 print('{}\n'.format(cli_cmd))
                 stream = os.popen(cli_cmd)
                 print(stream.read())
-    except:#all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
     except:  # all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
         print('INFO: MAIN: SEARCH: There has been error in {}!\n{}'.format(expander, traceback.format_exc()))
         raise
 
 def evaluate(expander, Qrels, rankers, metrics, trec_eval, output):
     # Evaluation using trec_eval
-    # eval_cmd = '{}eval/trec_eval.9.0.4/trec_eval'.format(anserini)
-    # eval_cmd = '{}/trec_eval'.format(trec_eval)
+    eval_cmd = '{}/trec_eval'.format(trec_eval)
     model_errs = dict()
 
     model_name = expander.get_model_name()
@@ -164,11 +162,11 @@ def aggregate(expanders, rankers, metrics, output):
         df = pd.concat([df, Q_], axis=1)
 
     filename = '{}.{}.{}.all.csv'.format(output, '.'.join([utils.get_ranker_name(r) for r in rankers]), '.'.join(metrics))
-                                         '.'.join(metrics))
     df.to_csv(filename, index=False)
     # for model_err, msg in model_errs.items():
     #     print('INFO: MAIN: AGGREGATE: There has been error in {}!\n{}'.format(model_err, msg))
     return filename
+
 
 def build(input, expanders, rankers, metrics, output):
     base_model_name = AbstractQExpander().get_model_name()
