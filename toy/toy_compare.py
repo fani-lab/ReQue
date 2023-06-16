@@ -2,6 +2,7 @@ import re
 import optparse
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def calculate_tValue_cohensD(map1, map2):
@@ -56,6 +57,14 @@ def compare_mAP_each_row(infile_df, outfile_path, columns):
     # write dataFrame to SalesRecords CSV file
     output_file_name = f'compare.mAP.{columns.col1}.{columns.col2}.csv'
     csv_result.to_csv(outfile_path + output_file_name)
+
+
+def plot_result(map1, map2):
+    xpoints = np.array([1, 8])
+    ypoints = np.array([3, 10])
+
+    plt.plot(xpoints, ypoints, 'o')
+    plt.show()
 
 
 def compare_mAP_all_row(infile_df, outfile_path, columns):
