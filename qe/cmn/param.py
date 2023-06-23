@@ -4,38 +4,38 @@ sys.path.extend(['../qe'])
 
 ReQue = {
     'parallel': 1,
-    'op': ['generate'],  # ['generate', 'search', 'evaluate', 'build']
+    'op':  ['generate', 'search', 'evaluate', 'build'],  # ['generate', 'search', 'evaluate', 'build']
     'expanders': {
-        'SenseDisambiguation': 0,
-        'Thesaurus': 0,  # done-half
-        'Wordnet': 0,  # done
-        'Conceptnet': 0,  # done-half
-        'Tagmee': 0,  # done-half
+        'SenseDisambiguation':  0,
+        'Thesaurus':            0,  # done-half
+        'Wordnet':              0,  # done
+        'Conceptnet':           0,  # done-half
+        'Tagmee':               0,  # done-half
 
-        'Word2Vec': 1,  # done
-        'Glove': 1,  # done
-        'Anchor': 0,  # xdone
-        'Wiki': 0,  # xdone
+        'Word2Vec':             0,  # done
+        'Glove':                0,  # done
+        'Anchor':               0,  # xdone
+        'Wiki':                 0,  # xdone
 
-        'KrovetzStemmer': 0,  # done
-        'LovinsStemmer': 0,  # done
-        'PaiceHuskStemmer': 0,  # done
-        'PorterStemmer': 0,  # done
-        'Porter2Stemmer': 0,  # done
-        'SRemovalStemmer': 0,  # done
-        'Trunc4Stemmer': 0,  # done
-        'Trunc5Stemmer': 0,
+        'KrovetzStemmer':       0,  # done
+        'LovinsStemmer':        1,  # done
+        'PaiceHuskStemmer':     0,  # done
+        'PorterStemmer':        0,  # done
+        'Porter2Stemmer':       0,  # done
+        'SRemovalStemmer':      0,  # done
+        'Trunc4Stemmer':        0,  # done
+        'Trunc5Stemmer':        0,
 
-        'RelevanceFeedback': 0,
-        'Docluster': 0,
-        'Termluster': 0,
-        'Conceptluster': 0,
-        'OnFields': 0,  # make sure that the index for 'extcorpus' is available
-        'AdapOnFields': 0,  # make sure that the index for 'extcorpus' is available
-        'BertQE': 0,
-        'RM3': 0,
+        'RelevanceFeedback':    0,
+        'Docluster':            0,
+        'Termluster':           0,
+        'Conceptluster':        0,
+        'OnFields':             0,  # make sure that the index for 'extcorpus' is available
+        'AdapOnFields':         0,  # make sure that the index for 'extcorpus' is available
+        'BertQE':               0,
+        'RM3':                  0,
 
-        'BackTranslation': 0,
+        'BackTranslation':      0,
     }
 }
 
@@ -142,3 +142,17 @@ corpora = {
     },
 }
 
+backtranslation = {
+    'src_lng': 'eng_Latn',  #
+    'tgt_lng': ['fra_Latn'],# ['pes_Arab', 'yue_Hant', 'fra_Latn', 'deu_Latn', 'dan_Latn']
+    'max_length': 512,
+    'device': 'cpu',
+    'model_card': 'facebook/nllb-200-distilled-600M', #t5-base
+    'transformer_model': 'johngiorgi/declutr-small',
+}
+
+settings = {
+    'search': {
+        'hitsnumber': 1000  # Number of hits to return
+    },
+}
