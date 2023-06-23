@@ -54,7 +54,7 @@ def generate(Qfilename, expander, output):
         raise
 
 
-def search(expander, rankers, topicreader, index, anserini, output):
+def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
     # Information Retrieval using Anserini
     rank_cmd = f'{anserini}target/appassembler/bin/SearchCollection'
 
@@ -66,40 +66,32 @@ def search(expander, rankers, topicreader, index, anserini, output):
             Q_pred = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.txt'
             q_dic = {}
             searcher = LuceneSearcher(index)
-            if ranker == '-bm25':
-                searcher.set_bm25(0.9, 0.4)
-            elif ranker == '-qld':
-                searcher.set_qld()
+            if ranker == '-bm25': searcher.set_bm25(0.9, 0.4)
+            elif ranker == '-qld': searcher.set_qld()
 
             if isinstance(expander, OnFields):  # or isinstance(expander, BertQE)
                 run_file = open(Q_pred, 'w')
                 list_of_raw_queries = utils.get_raw_query(topicreader, Q_filename)
-                for qid, query in list_of_raw_queries.items():
-                    q_dic[qid.strip()] = eval(query)
+                for qid, query in list_of_raw_queries.items(): q_dic[qid.strip()] = eval(query)
                 for qid in q_dic.keys():
                     boost = []
                     for q_terms, q_weights in q_dic[qid].items():
-                        try:
-                            boost.append(querybuilder.get_boost_query(querybuilder.get_term_query(q_terms), q_weights))
-                        except:
+                        try: boost.append(querybuilder.get_boost_query(querybuilder.get_term_query(q_terms), q_weights))
+                        except: pass
                             # term do not exist in the indexed collection () e.g., stop words
-                            pass
 
                     should = querybuilder.JBooleanClauseOccur['should'].value
                     boolean_query_builder = querybuilder.get_boolean_query_builder()
-                    for boost_i in boost:
-                        boolean_query_builder.add(boost_i, should)
+                    for boost_i in boost: boolean_query_builder.add(boost_i, should)
                     retrieved_docs = []
                     query = boolean_query_builder.build()
-                    hits = searcher.search(query, k=10000)
-                    for i in range(0, 1000):
+                    hits = searcher.search(query, k=hitsnumber)
+                    for i in range(0, hitsnumber):
                         try:
                             if hits[i].docid not in retrieved_docs:
                                 retrieved_docs.append(hits[i].docid)
-                                run_file.write(
-                                    f'{qid} Q0  {hits[i].docid:15} {i + 1:2}  {hits[i].score:.5f} Pyserini \n')
-                        except:
-                            pass
+                                run_file.write(f'{qid} Q0  {hits[i].docid:15} {i + 1:2}  {hits[i].score:.5f} Pyserini \n')
+                        except: pass
                 run_file.close()
 
             elif topicreader == 'TsvString' or topicreader == 'TsvInt':
@@ -107,7 +99,7 @@ def search(expander, rankers, topicreader, index, anserini, output):
                     for line in qlines.readlines():
                         retrieved_docs = []
                         qid, qtext = line.split('\t')
-                        hits = searcher.search(qtext, k=1000)
+                        hits = searcher.search(qtext, k=hitsnumber)
                         for i in range(len(hits)):
                             if hits[i].docid not in retrieved_docs:
                                 retrieved_docs.append(hits[i].docid)
@@ -118,6 +110,7 @@ def search(expander, rankers, topicreader, index, anserini, output):
                 print(f'{cli_cmd}\n')
                 stream = os.popen(cli_cmd)
                 print(stream.read())
+
     except:  # all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
         print(f'INFO: MAIN: SEARCH: There has been error in {expander}!\n{traceback.format_exc()}')
         raise
@@ -215,11 +208,13 @@ def build(input, expanders, rankers, metrics, output):
 
 def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
     exceptions = {}
+    #todo: make it multiprocess
 
     def worker_thread(expander):
         try:
             if 'generate' in op: generate(Qfilename=param.corpora[corpus]['topics'], expander=expander, output=output_)
-            if 'search' in op: search(expander=expander, rankers=rankers, topicreader=topicreader,
+            if 'search' in op: search(expander=expander, rankers=rankers,
+                                      hitsnumber=param.settings['search']['hitsnumber'], topicreader=topicreader,
                                       index=param.corpora[corpus]['index'], anserini=param.anserini['path'],
                                       output=output_)
             if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers,
@@ -242,164 +237,48 @@ def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
     return threads, exceptions
 
 
+def initialize(corpus, rankers, metrics, output, rf=True, op=[], topicreader=""):
+    expanders = ef.get_nrf_expanders()
+    # local analysis
+    if rf: expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output, ext_corpus=param.corpora[corpus]['extcorpus'])
+
+    threads, exceptions = worker(corpus, rankers, metrics, op, output, topicreader, expanders)
+    for thread in threads: thread.join()
+    expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
+
+    if 'build' in op:
+        result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output)
+        build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output)
+    else: result = None
+
+    return result
+
+
 def run(corpus, rankers, metrics, output, rf=True, op=[]):
-    if corpus == 'dbpedia':
-        topicreader = 'TsvString'
-        output_ = f'{output}topics.dbpedia'
-        expanders = ef.get_nrf_expanders()
-        if rf:  # local analysis
-            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                             ext_corpus=param.corpora[corpus]['extcorpus'])
+    r = []
 
-        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-        for thread in threads: thread.join()
-        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
+    if corpus == 'dbpedia': topicreader = 'TsvString'
+    elif corpus == 'antique': topicreader = 'TsvInt'
+    elif corpus == 'trec09mq': topicreader = 'TsvInt'
+    elif corpus == 'orcas': topicreader = 'TsvInt'
+    elif corpus == 'robust04': topicreader = 'Trec'
+    elif corpus == 'gov2':  topicreader = 'Trec'; middle = 'topics.terabyte0';  r.append(['4.701-750', '5.751-800', '6.801-850']); results = []
+    elif corpus == 'clueweb09b': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['1-50', '51-100', '101-150', '151-200']);results = []
+    elif corpus == 'clueweb12b13': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['201-250', '251-300']); results = []
 
-        if 'build' in op:
-            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
+    else:
+        print('Please choose a corpus between these:' + ', '.join(param.corpora.keys()))
+        exit()
 
-    if corpus == 'antique':
-        topicreader = 'TsvInt'
-        output_ = f'{output}topics.antique'
-        expanders = ef.get_nrf_expanders()
-        if rf:  # local analysis
-            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                             ext_corpus=param.corpora[corpus]['extcorpus'])
+    if len(r) == 0:
+        output_ = f'{output}topics.{corpus}'
+        result = initialize(corpus, rankers, metrics, output_, rf, op, topicreader)
 
-        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-        for thread in threads: thread.join()
-        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-        if 'build' in op:
-            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-
-    if corpus == 'trec09mq':
-        topicreader = 'TsvInt'
-        output_ = f'{output}topics.trec09mq'
-        expanders = ef.get_nrf_expanders()
-        if rf:  # local analysis
-            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                             ext_corpus=param.corpora[corpus]['extcorpus'])
-
-        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-        for thread in threads: thread.join()
-        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-        if 'build' in op:
-            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-
-    if corpus == 'orcas':
-        topicreader = 'TsvInt'
-        output_ = f'{output}topics.orcas'
-        expanders = ef.get_nrf_expanders()
-        if rf:  # local analysis
-            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                             ext_corpus=param.corpora[corpus]['extcorpus'])
-
-        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-        for thread in threads: thread.join()
-        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-        if 'build' in op:
-            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-
-    if corpus == 'robust04':
-        topicreader = 'Trec'
-        output_ = f'{output}topics.robust04'
-        expanders = ef.get_nrf_expanders()
-        if rf:  # local analysis
-            expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                             ext_corpus=param.corpora[corpus]['extcorpus'])
-
-        threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-        for thread in threads: thread.join()
-        expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-        if 'build' in op:
-            result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-            build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-
-    if corpus == 'gov2':
-        topicreader = 'Trec'
-
-        results = []
-        for r in ['4.701-750', '5.751-800', '6.801-850']:
-            output_ = f'{output}topics.terabyte0{r}'
-
-            expanders = ef.get_nrf_expanders()
-            if rf:
-                expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                                 ext_corpus=param.corpora[corpus]['extcorpus'])
-
-            threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-            for thread in threads: thread.join()
-            expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-            if 'build' in op:
-                result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                result = build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                results.append(result)
-
-        if 'build' in op:
-            output_ = results[0].replace(results[0].split('/')[-1].split('.')[1], 'gov2').replace(
-                results[0].split('/')[-1].split('.')[2], '701-850')
-            df = pd.DataFrame()
-            for r in results:
-                df = pd.concat([df, pd.read_csv(r)], axis=0, ignore_index=True, sort=False)
-            df.to_csv(output_, index=False)
-
-    if corpus == 'clueweb09b':
-        topicreader = 'Webxml'
-
-        results = []
-        for r in ['1-50', '51-100', '101-150', '151-200']:
-            output_ = f'{output}topics.web.{r}'
-
-            expanders = ef.get_nrf_expanders()
-            if rf:
-                expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                                 ext_corpus=param.corpora[corpus]['extcorpus'])
-
-            threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-            for thread in threads: thread.join()
-            expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-            if 'build' in op:
-                result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                result = build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                results.append(result)
-
-        if 'build' in op:
-            output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', '.clueweb09b.').replace(
-                results[0].split('/')[-1].split('.')[2], '1-200')
-            df = pd.DataFrame()
-            for r in results:
-                df = pd.concat([df, pd.read_csv(r)], axis=0, ignore_index=True, sort=False)
-            df.to_csv(output_, index=False)
-
-    if corpus == 'clueweb12b13':
-        topicreader = 'Webxml'
-        results = []
-        for r in ['201-250', '251-300']:
-            output_ = f'{output}topics.web.{r}'
-
-            expanders = ef.get_nrf_expanders()
-            if rf:
-                expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output_,
-                                                 ext_corpus=param.corpora[corpus]['extcorpus'])
-
-            threads, exceptions = worker(corpus, rankers, metrics, op, output_, topicreader, expanders)
-            for thread in threads: thread.join()
-            expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
-
-            if 'build' in op:
-                result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                result = build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output_)
-                results.append(result)
+    else:
+        for i in r:
+            output_ = f'{output}{middle}.{corpus}.{i}'
+            result = initialize(corpus, rankers, metrics, output_, rf, op, topicreader)
+            if 'build' in op: results.append(result)
 
         if 'build' in op:
             output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', '.clueweb12b13.').replace(
@@ -414,7 +293,8 @@ def addargs(parser):
     corpus = parser.add_argument_group('Corpus')
     corpus.add_argument('--corpus', type=str,
                         choices=['dbpedia', 'antique', 'robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'trec09mq',
-                                 'orcas'], required=True, help='The corpus name; required; (example: robust04)')
+                                 'orcas', 'testds'], required=True,
+                        help='The corpus name; required; (example: robust04)')
 
     gold = parser.add_argument_group('Gold Standard Dataset')
     gold.add_argument('--output', type=str, required=True,
