@@ -35,15 +35,13 @@ class AbstractQExpander:
                 print('INFO: MAIN: {}: Expanding queries in {} ...'.format(self.get_model_name(), Qfilename))
                 for line in Qfile:
                     # For txt files
-                    if '<top>' in line and not is_tag_file:
-                        is_tag_file = True
-                    elif '<num>' in line:
+                    if '<top>' in line and not is_tag_file: is_tag_file = True
+                    if '<num>' in line:
                         qid = int(line[line.index(':') + 1:])
                         Q_file.write(line)
                     elif line[:7] == '<title>':#for robust & gov2
                         q = line[8:].strip()
-                        if not q:
-                            q = next(Qfile).strip()
+                        if not q: q = next(Qfile).strip()
                         try:
                             q_ = self.get_expanded_query(q, [qid])
                             q_ = utils.clean(q_) if clean else q_
@@ -71,7 +69,6 @@ class AbstractQExpander:
                                 print(traceback.format_exc())
                                 q_ = q
                             Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
-                            # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                             print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
 
@@ -90,8 +87,7 @@ class AbstractQExpander:
                         # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                         print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_).encode('UTF-8'))
                         Q_file.write(str(qid)+'\t'+ str(q_) + '\n')
-                    else:
-                        Q_file.write(line)
+                    else: Q_file.write(line)
         return Q_
 
     def read_expanded_queries(self, Q_filename):
@@ -102,26 +98,22 @@ class AbstractQExpander:
             print('INFO: MAIN: {}: Reading expanded queries in {} ...'.format(self.get_model_name(), Q_filename))
             for line in Q_file:
                 q_ = None
-                if '<top>' in line and not is_tag_file:  # for files with tag
-                    is_tag_file = True
-                if '<num>' in line:
-                    qid = line[line.index(':') + 1:].strip()
-                elif line[:7] == '<title>':  # for robust & gov2
-                    q_ = line[8:].strip() + ' '
+                # for files with tag
+                if '<top>' in line and not is_tag_file: is_tag_file = True
+                if '<num>' in line: qid = line[line.index(':') + 1:].strip()
+                # for robust & gov2
+                elif line[:7] == '<title>': q_ = line[8:].strip() + ' '
                 elif '<topic' in line:
                     s = line.index('\"') + 1
                     e = line.index('\"', s + 1)
                     qid = line[s:e].strip()
-                elif line[2:9] == '<query>':  # for clueweb09b & clueweb12b13
-                    q_ = line[9:-9] + ' '
+                # for clueweb09b & clueweb12b13
+                elif line[2:9] == '<query>': q_ = line[9:-9] + ' '
                 elif len(line.split('\t')) >= 2 and not is_tag_file:
                     qid = line.split('\t')[0].rstrip()
                     q_= line.split('\t')[1].rstrip()
-                else:
-                    continue
-                if q_:
-                    Q_ = pd.concat([Q_, pd.DataFrame([{'qid': qid, model_name: q_}])], ignore_index=True)
-                    # Q_ = Q_.append({'qid': qid, model_name: q_}, ignore_index=True)
+                else: continue
+                if q_: Q_ = pd.concat([Q_, pd.DataFrame([{'qid': qid, model_name: q_}])], ignore_index=True)
         return Q_.astype({'qid': 'str'})
 
 if __name__ == "__main__":
