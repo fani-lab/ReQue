@@ -38,7 +38,7 @@ class BackTranslation(AbstractQExpander):
         return back_translated_query[0]['translation_text']
 
     def get_model_name(self):
-        return super().get_model_name() + '.' + self.tgt
+        return super().get_model_name() + '_' + (self.tgt).lower()
 
     def semsim(self, q1, q2):
         me, you = self.transformer_model(q1, q2)
