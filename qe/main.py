@@ -261,6 +261,7 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
     elif corpus == 'antique': topicreader = 'TsvInt'
     elif corpus == 'trec09mq': topicreader = 'TsvInt'
     elif corpus == 'orcas': topicreader = 'TsvInt'
+    # The 672 query (topic) has no qrels (document judge relevant)
     elif corpus == 'robust04': topicreader = 'Trec'
     elif corpus == 'gov2':  topicreader = 'Trec'; middle = 'topics.terabyte0';  r.append(['4.701-750', '5.751-800', '6.801-850']); results = []
     elif corpus == 'clueweb09b': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['1-50', '51-100', '101-150', '151-200']);results = []
