@@ -37,10 +37,7 @@ def get_nrf_expanders():
     if param.ReQue['expanders']['SRemovalStemmer']: from stemmers.sstemmer import SRemovalStemmer; expanders_list.append(Stem(SRemovalStemmer()))
     if param.ReQue['expanders']['Trunc4Stemmer']: from stemmers.trunc4 import Trunc4Stemmer; expanders_list.append(Stem(Trunc4Stemmer()))
     if param.ReQue['expanders']['Trunc5Stemmer']: from stemmers.trunc5 import Trunc5Stemmer; expanders_list.append(Stem(Trunc5Stemmer()))
-    if param.ReQue['expanders']['BackTranslation']:
-        from expanders.backtranslation import BackTranslation
-        for index, each_lng in enumerate(param.backtranslation['tgt_lng']):
-            expanders_list.append(BackTranslation(each_lng))
+    if param.ReQue['expanders']['BackTranslation']: from expanders.backtranslation import BackTranslation; expanders_list.extend([BackTranslation(each_lng) for index, each_lng in enumerate(param.backtranslation['tgt_lng'])])
     # since RF needs index and search output which depends on ir method and topics corpora, we cannot add this here. Instead, we run it individually
     # RF assumes that there exist abstractqueryexpansion files
 
@@ -57,21 +54,7 @@ def get_rf_expanders(rankers, corpus, output, ext_corpus=None):
         if param.ReQue['expanders']['Termluster']: from expanders.termluster import Termluster; expanders_list.append(Termluster(ranker=ranker_name, prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index']))
         if param.ReQue['expanders']['Conceptluster']: from expanders.conceptluster import Conceptluster; expanders_list.append(Conceptluster(ranker=ranker_name, prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index']))
         if param.ReQue['expanders']['BertQE']: from expanders.bertqe import BertQE; expanders_list.append(BertQE(ranker=ranker_name, prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), index=param.corpora[corpus]['index'], anserini=param.anserini['path']))
-        if param.ReQue['expanders']['OnFields']: from expanders.onfields import OnFields; expanders_list.append(OnFields(ranker=ranker_name, prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index'],
-                                                                          w_t=param.corpora[corpus]['w_t'],
-                                                                          w_a=param.corpora[corpus]['w_a'],
-                                                                          corpus_size=param.corpora[corpus]['size']))
-        if param.ReQue['expanders']['AdapOnFields']: from expanders.adaponfields import AdapOnFields; expanders_list.append(AdapOnFields(ranker=ranker_name,prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index'],
-                                                                              w_t=param.corpora[corpus]['w_t'],
-                                                                              w_a=param.corpora[corpus]['w_a'],
-                                                                              corpus_size=param.corpora[corpus]['size'],
-                                                                              collection_tokens=param.corpora[corpus]['tokens'],
-                                                                              ext_corpus=ext_corpus,
-                                                                              ext_index=param.corpora[ext_corpus]['index'],
-                                                                              ext_collection_tokens=param.corpora[ext_corpus]['tokens'],
-                                                                              ext_w_t=param.corpora[ext_corpus]['w_t'],
-                                                                              ext_w_a=param.corpora[ext_corpus]['w_a'],
-                                                                              ext_corpus_size=param.corpora[ext_corpus]['size'],
-                                                                              adap=True))
+        if param.ReQue['expanders']['OnFields']: from expanders.onfields import OnFields; expanders_list.append(OnFields(ranker=ranker_name, prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index'], w_t=param.corpora[corpus]['w_t'], w_a=param.corpora[corpus]['w_a'], corpus_size=param.corpora[corpus]['size']))
+        if param.ReQue['expanders']['AdapOnFields']: from expanders.adaponfields import AdapOnFields; expanders_list.append(AdapOnFields(ranker=ranker_name,prels='{}.abstractqueryexpansion.{}.txt'.format(output, ranker_name), anserini=param.anserini['path'], index=param.corpora[corpus]['index'], w_t=param.corpora[corpus]['w_t'], w_a=param.corpora[corpus]['w_a'], corpus_size=param.corpora[corpus]['size'], collection_tokens=param.corpora[corpus]['tokens'], ext_corpus=ext_corpus, ext_index=param.corpora[ext_corpus]['index'], ext_collection_tokens=param.corpora[ext_corpus]['tokens'], ext_w_t=param.corpora[ext_corpus]['w_t'], ext_w_a=param.corpora[ext_corpus]['w_a'], ext_corpus_size=param.corpora[ext_corpus]['size'], adap=True))
 
     return expanders_list
