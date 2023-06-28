@@ -49,9 +49,7 @@ def generate(Qfilename, expander, output):
         Q_filename = f'{output}.{model_name}.txt'
         # if not os.path.isfile(Q_filename) or overwrite:
         expander.write_expanded_queries(Qfilename, Q_filename)
-    except:
-        print(f'INFO: MAIN: GENERATE: There has been error in {expander}!\n{traceback.format_exc()}')
-        raise
+    except: print(f'INFO: MAIN: GENERATE: There has been error in {expander}!\n{traceback.format_exc()}'); raise
 
 
 def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
@@ -77,8 +75,7 @@ def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
                     boost = []
                     for q_terms, q_weights in q_dic[qid].items():
                         try: boost.append(querybuilder.get_boost_query(querybuilder.get_term_query(q_terms), q_weights))
-                        except: pass
-                            # term do not exist in the indexed collection () e.g., stop words
+                        except: pass  # term do not exist in the indexed collection () e.g., stop words
 
                     should = querybuilder.JBooleanClauseOccur['should'].value
                     boolean_query_builder = querybuilder.get_boolean_query_builder()
@@ -110,16 +107,13 @@ def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
                 print(f'{cli_cmd}\n')
                 stream = os.popen(cli_cmd)
                 print(stream.read())
-
-    except:  # all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
-        print(f'INFO: MAIN: SEARCH: There has been error in {expander}!\n{traceback.format_exc()}')
-        raise
+    # all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
+    except: print(f'INFO: MAIN: SEARCH: There has been error in {expander}!\n{traceback.format_exc()}'); raise
 
 
 def evaluate(expander, Qrels, rankers, metrics, eval_cmd, output):
     # Evaluation using trec_eval
     model_errs = dict()
-
     model_name = expander.get_model_name()
     try:
         for ranker in rankers:
@@ -127,7 +121,7 @@ def evaluate(expander, Qrels, rankers, metrics, eval_cmd, output):
             for metric in metrics:
                 Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}.txt'
                 cli_cmd = f'\"{eval_cmd}\" -q -m {metric} {Qrels} {Q_pred} > {Q_eval}'
-                print(f'{cli_cmd}\n')
+                print(cli_cmd)
                 stream = os.popen(cli_cmd)
                 print(stream.read())
     except:  # all exception related to calling the trec_eval cannot be captured here!! since it is outside the process scope
@@ -172,8 +166,7 @@ def build(input, expanders, rankers, metrics, output):
         for model in expanders:
             model_name = model.get_model_name()
             if model_name == base_model_name: continue
-            flag = True
-            sum = 0
+            flag, sum = True, 0
             for ranker in rankers:
                 for metric in metrics:
                     v = df.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}']
@@ -204,20 +197,15 @@ def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
     def worker_thread(expander):
         try:
             if 'generate' in op: generate(Qfilename=param.corpora[corpus]['topics'], expander=expander, output=output_)
-            if 'search' in op: search(expander=expander, rankers=rankers,
-                                      hitsnumber=param.settings['search']['hitsnumber'], topicreader=topicreader,
-                                      index=param.corpora[corpus]['index'], anserini=param.anserini['path'],
-                                      output=output_)
-            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers,
-                                          metrics=metrics, eval_cmd=param.anserini['trec_eval'], output=output_)
+            if 'search' in op: search(expander=expander, rankers=rankers, hitsnumber=param.settings['search']['hitsnumber'], topicreader=topicreader, index=param.corpora[corpus]['index'], anserini=param.anserini['path'], output=output_)
+            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers, metrics=metrics, eval_cmd=param.anserini['trec_eval'], output=output_)
         except:
             print(f'INFO: MAIN: THREAD: {threading.currentThread().getName()}: There has been error in {expander}!\n{traceback.format_exc()}')
             exceptions[expander.get_model_name()] = traceback.format_exc()
 
     threads = []
     for expander in expanders:
-        if param.ReQue['parallel']:
-            threads.append(threading.Thread(daemon=True, target=worker_thread, name=expander.get_model_name(), args=(expander,)))
+        if param.ReQue['parallel']: threads.append(threading.Thread(daemon=True, target=worker_thread, name=expander.get_model_name(), args=(expander,)))
         else: worker_thread(expander)
     if param.ReQue['parallel']: print(f'Starting threads per expanders for {[e for e in param.ReQue["op"] if e != "build"]} ...')
     for thread in threads: thread.start()
@@ -237,7 +225,6 @@ def initialize(corpus, rankers, metrics, output, rf=True, op=[], topicreader="")
         result = aggregate(expanders=expanders, rankers=rankers, metrics=metrics, output=output)
         build(input=result, expanders=expanders, rankers=rankers, metrics=metrics, output=output)
     else: result = None
-
     return result
 
 
@@ -253,7 +240,6 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
     elif corpus == 'gov2':  topicreader = 'Trec'; middle = 'topics.terabyte0';  r.append(['4.701-750', '5.751-800', '6.801-850']); results = []
     elif corpus == 'clueweb09b': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['1-50', '51-100', '101-150', '151-200']);results = []
     elif corpus == 'clueweb12b13': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['201-250', '251-300']); results = []
-
     else: print('Please choose a corpus between these:' + ', '.join(param.corpora.keys())); exit()
 
     if len(r) == 0:
@@ -267,28 +253,19 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
             if 'build' in op: results.append(result)
 
         if 'build' in op:
-            output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', '.clueweb12b13.').replace(
-                results[0].split('/')[-1].split('.')[2], '201-300')
+            output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', '.clueweb12b13.').replace(results[0].split('/')[-1].split('.')[2], '201-300')
             df = pd.DataFrame()
-            for r in results:
-                df = pd.concat([df, pd.read_csv(r)], axis=0, ignore_index=True, sort=False)
+            for r in results: df = pd.concat([df, pd.read_csv(r)], axis=0, ignore_index=True, sort=False)
             df.to_csv(output_, index=False)
 
 
 def addargs(parser):
     corpus = parser.add_argument_group('Corpus')
-    corpus.add_argument('--corpus', type=str,
-                        choices=['dbpedia', 'antique', 'robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'trec09mq',
-                                 'orcas', 'testds'], required=True,
-                        help='The corpus name; required; (example: robust04)')
-
+    corpus.add_argument('--corpus', type=str, choices=['dbpedia', 'antique', 'robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'trec09mq', 'orcas', 'testds'], required=True, help='The corpus name; required; (example: robust04)')
     gold = parser.add_argument_group('Gold Standard Dataset')
-    gold.add_argument('--output', type=str, required=True,
-                      help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
-    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld'], default=['bm25', 'qld'],
-                      help='The ranker names (default: bm25 qld)')
-    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg'], default=['map', 'ndcg'],
-                      help='The evaluation metric names (default: map ndcg)')
+    gold.add_argument('--output', type=str, required=True, help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
+    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld'], default=['bm25', 'qld'], help='The ranker names (default: bm25 qld)')
+    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg'], default=['map', 'ndcg'], help='The evaluation metric names (default: map ndcg)')
 
 
 # # python -u main.py --corpus robust04 --output ./output/robust04/ --rankers bm25 qld --metrics map ndcg 2>&1 | tee robust04.log &
