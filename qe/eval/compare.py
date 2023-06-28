@@ -62,17 +62,18 @@ def compare_mAP_each_row(infile_df, outfile_path, col1, col2):
 
 def plot_result(infile_df, col1, col2):
     # Map of the main column
-    map1 = infile_df[
-        [word for word in list(infile_df.columns) if word.startswith(col1) and word.endswith('map')][0]].tolist()
+    map1 = infile_df[[word for word in list(infile_df.columns) if word.startswith(col1) and word.endswith('map')][0]].tolist()
     map1 = [0 if str(item) == 'nan' else item for item in map1]
 
     # Plot the difference between maps of col1 and col2
     for word in list(infile_df.columns):
         if word.startswith(col2) and word.endswith("map"):
             map2 = [0 if str(item) == 'nan' else item for item in infile_df[word]]
-            diff = np.subtract(map2, map1)
-            plt.plot(diff, [d for d in range(len(map1))])
-            plt.show()
+            diff = np.subtract(map2, map1)  # Delta map
+            plt.plot(diff, label=word.replace(word[word.find('.'):], ''))
+
+    plt.legend()
+    plt.show()
 
 
 def compare_mAP_all_row(infile_df, outfile_path, col1, col2):
