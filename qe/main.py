@@ -147,14 +147,9 @@ def aggregate(expanders, rankers, metrics, output):
             for metric in metrics:
                 Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}.txt'
                 # the last row is average over all. skipped by [:-1]
-
                 values = pd.read_csv(Q_eval, usecols=[1, 2], names=['qid', 'value'], header=None, sep='\t')[:-1]
-
                 values.set_index('qid', inplace=True, verify_integrity=True)
-                for idx, r in Q_.iterrows():
-                    Q_.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[str(r.qid), 'value'] if str(r.qid) in values.index else None
-
-
+                for idx, r in Q_.iterrows(): Q_.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[str(r.qid), 'value'] if str(r.qid) in values.index else None
         # except:
         #     model_errs[model_name] = traceback.format_exc()
         #     continue
@@ -176,8 +171,7 @@ def build(input, expanders, rankers, metrics, output):
         star_models = dict()
         for model in expanders:
             model_name = model.get_model_name()
-            if model_name == base_model_name:
-                continue
+            if model_name == base_model_name: continue
             flag = True
             sum = 0
             for ranker in rankers:
@@ -186,12 +180,9 @@ def build(input, expanders, rankers, metrics, output):
                     v = v if not pd.isna(v) else 0
                     v0 = df.loc[idx, f'{base_model_name}.{utils.get_ranker_name(ranker)}.{metric}']
                     v0 = v0 if not pd.isna(v0) else 0
-                    if v <= v0:
-                        flag = False
-                        break
+                    if v <= v0: flag = False; break
                     sum += v ** 2
-            if flag:
-                star_models[model] = sum
+            if flag: star_models[model] = sum
 
         if len(star_models) > 0:
             ds_df.loc[idx, 'star_model_count'] = len(star_models.keys())
@@ -200,8 +191,7 @@ def build(input, expanders, rankers, metrics, output):
                 ds_df.loc[idx, f'method.{i + 1}'] = star_model.get_model_name()
                 ds_df.loc[idx, f'metric.{i + 1}'] = math.sqrt(star_models[star_model])
                 ds_df.loc[idx, f'query.{i + 1}'] = df.loc[idx, f'{star_model.get_model_name()}']
-        else:
-            ds_df.loc[idx, 'star_model_count'] = 0
+        else: ds_df.loc[idx, 'star_model_count'] = 0
     filename = f"{output}.{'.'.join([utils.get_ranker_name(r) for r in rankers])}.{'.'.join(metrics)}.dataset.csv"
     ds_df.to_csv(filename, index=False, encoding='UTF-8')
     return filename
@@ -221,19 +211,15 @@ def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
             if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers,
                                           metrics=metrics, eval_cmd=param.anserini['trec_eval'], output=output_)
         except:
-            print(
-                f'INFO: MAIN: THREAD: {threading.currentThread().getName()}: There has been error in {expander}!\n{traceback.format_exc()}')
+            print(f'INFO: MAIN: THREAD: {threading.currentThread().getName()}: There has been error in {expander}!\n{traceback.format_exc()}')
             exceptions[expander.get_model_name()] = traceback.format_exc()
 
     threads = []
     for expander in expanders:
         if param.ReQue['parallel']:
-            threads.append(
-                threading.Thread(daemon=True, target=worker_thread, name=expander.get_model_name(), args=(expander,)))
-        else:
-            worker_thread(expander)
-    if param.ReQue['parallel']: print(
-        f'Starting threads per expanders for {[e for e in param.ReQue["op"] if e != "build"]} ...')
+            threads.append(threading.Thread(daemon=True, target=worker_thread, name=expander.get_model_name(), args=(expander,)))
+        else: worker_thread(expander)
+    if param.ReQue['parallel']: print(f'Starting threads per expanders for {[e for e in param.ReQue["op"] if e != "build"]} ...')
     for thread in threads: thread.start()
     return threads, exceptions
 
@@ -268,9 +254,7 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
     elif corpus == 'clueweb09b': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['1-50', '51-100', '101-150', '151-200']);results = []
     elif corpus == 'clueweb12b13': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['201-250', '251-300']); results = []
 
-    else:
-        print('Please choose a corpus between these:' + ', '.join(param.corpora.keys()))
-        exit()
+    else: print('Please choose a corpus between these:' + ', '.join(param.corpora.keys())); exit()
 
     if len(r) == 0:
         output_ = f'{output}topics.{corpus}'

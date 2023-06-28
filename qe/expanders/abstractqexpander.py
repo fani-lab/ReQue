@@ -15,19 +15,14 @@ class AbstractQExpander:
     def get_expanded_query(self, q, args=None): return q, args
 
     def get_model_name(self):
-        if self.__class__.__name__ == 'AbstractQExpander':
-            return 'AbstractQueryExpansion'.lower() #this is for backward compatibility for renaming this class
-        return '{}{}{}'.format(self.__class__.__name__.lower(),
-                         '.topn{}'.format(self.topn) if self.topn else '',
-                         '.replace' if self.replace else '')
+        # this is for backward compatibility for renaming this class
+        if self.__class__.__name__ == 'AbstractQExpander': return 'AbstractQueryExpansion'.lower()
+        return f"{self.__class__.__name__.lower()}{f'.topn{self.topn}' if self.topn else ''}{'.replace' if self.replace else ''}"
 
     def write_expanded_queries(self, Qfilename, Q_filename, clean=True):
         # prevent to clean the original query
-        if self.__class__.__name__ == 'AbstractQExpander':
-            clean = False
-
+        if self.__class__.__name__ == 'AbstractQExpander': clean = False
         model_name = self.get_model_name().lower()
-
         Q_ = pd.DataFrame()
         is_tag_file = False
         with open(Qfilename, 'r', encoding='UTF-8') as Qfile:
@@ -45,14 +40,13 @@ class AbstractQExpander:
                         try:
                             q_, args = self.get_expanded_query(q, args=[qid])
                             q_ = utils.clean(q_) if clean else q_
-                            if model_name.__contains__('backtranslation'):
-                                Q_file.write(f'<semsim> {args[0]:.4f} </semsim>\n') # write the semsim score in the txt file under <semsim> tag!
+                            # write the semsim score in the txt file under <semsim> tag
+                            if model_name.__contains__('backtranslation'): Q_file.write(f'<semsim> {args[0]:.4f} </semsim>\n')
                         except:
                             print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
                             print(traceback.format_exc())
                             q_ = q
                         Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
-                        # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                         print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                         Q_file.write('<title> ' + str(q_) + '\n')
                     elif '<topic' in line:
@@ -86,7 +80,6 @@ class AbstractQExpander:
                             print(traceback.format_exc())
                             q_ = q
                         Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
-                        # Q_ = Q_.append({model_name: q_}, ignore_index=True)
                         print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_).encode('UTF-8'))
                         Q_file.write(str(qid)+'\t'+ str(q_) + '\n')
                     else: Q_file.write(line)
@@ -179,10 +172,7 @@ if __name__ == "__main__":
     #              Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3),
     #              Anchor(anchorfile='../pre/anchor_text_en_sample.ttl', vectorfile='../pre/wiki-anchor-text-en-ttl-300d-sample.vec', topn=3, replace=True)
                  ]
-    for expander in expanders:
-        expander.write_expanded_queries(
-            '../ds/robust04/topics.robust04.txt',
-            'dummy.txt')
+    for expander in expanders: expander.write_expanded_queries('../ds/robust04/topics.robust04.txt', 'dummy.txt')
         # expanders.write_expanded_queries('../ds/gov2/topics.terabyte05.751-800.txt', 'dummy')
         # expanders.write_expanded_queries('../ds/clueweb09b/topics.web.101-150.txt', 'dummy')
         # expanders.write_expanded_queries('../ds/clueweb12b13/topics.web.201-250.txt', 'dummy')
