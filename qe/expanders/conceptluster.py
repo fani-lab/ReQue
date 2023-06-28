@@ -21,7 +21,7 @@ class Conceptluster(Termluster):
 
         G, cluster_dict = self.make_graph_document(list_of_concept_lists, min_edge=10)
         expanded_query = self.expand_query_concept_cluster(q, G, cluster_dict, k_relevant_words=self.topw)
-        return expanded_query
+        return super().get_expanded_query(expanded_query)
 
     def expand_query_concept_cluster(self, q, G, cluster_dict, k_relevant_words):
         q += ' ' + ' '.join(self.get_concepts(q, 0.1))

@@ -1,5 +1,5 @@
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
-# from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import cosine
 import sys
 
@@ -18,7 +18,7 @@ class BackTranslation(AbstractQExpander):
         model = AutoModelForSeq2SeqLM.from_pretrained(param.backtranslation['model_card'])
         tokenizer = AutoTokenizer.from_pretrained(param.backtranslation['model_card'])
 
-        # self.transformer_model = SentenceTransformer(param.backtranslation['transformer_model'])
+        self.transformer_model = SentenceTransformer(param.backtranslation['transformer_model'])
 
         self.translator = pipeline("translation", model=model, tokenizer=tokenizer,
                                    src_lang=param.backtranslation['src_lng'], tgt_lang=self.tgt,
@@ -33,15 +33,17 @@ class BackTranslation(AbstractQExpander):
         translated_query = self.translator(q)
         back_translated_query = self.back_translator(translated_query[0]['translation_text'])
 
-        # self.semsim(translated_query[0]['translation_text'], back_translated_query[0]['translation_text'])
+        score = self.semsim(q, back_translated_query[0]['translation_text'])
+        return super().get_expanded_query(back_translated_query[0]['translation_text'], [score])
 
-        return back_translated_query[0]['translation_text']
+        # score = self.semsim(q, q)
+        # return super().get_expanded_query(q, [score])
 
     def get_model_name(self):
-        return super().get_model_name() + '_' + (self.tgt).lower()
+        return super().get_model_name() + '_' + self.tgt.lower()
 
     def semsim(self, q1, q2):
-        me, you = self.transformer_model(q1, q2)
+        me, you = self.transformer_model.encode([q1, q2])
         return 1 - cosine(me, you)
 
 

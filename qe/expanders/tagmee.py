@@ -27,7 +27,7 @@ class Tagmee(AbstractQExpander):
             res = [w for w in upd_query]
         for c in query_concepts:
             res.append(c)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
 
 
 if __name__ == "__main__":

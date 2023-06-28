@@ -133,7 +133,7 @@ class OnFields(RelevanceFeedback):
             top_n_informative_words[ps.stem(original_q_term)]=2
 
         top_n_informative_words=dict(sorted(top_n_informative_words.items(), key=lambda x: x[1])[::-1])
-        return str(top_n_informative_words)
+        return super().get_expanded_query(str(top_n_informative_words))
 
     def get_model_name(self):
         return super().get_model_name().replace('topn{}'.format(self.topn),

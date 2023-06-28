@@ -55,10 +55,10 @@ class AdapOnFields(OnFields):
             output_weighted_q_dic={}
             for terms in q.split():
                 output_weighted_q_dic[ps.stem(terms)]=2
-            return output_weighted_q_dic
+            return super().get_expanded_query(output_weighted_q_dic)
         
         elif Preferred_expansion =="InternalExpansionPreferred":
-            return(super().get_expanded_query(q, [qid]))
+            return super().get_expanded_query(q, [qid])
         
         elif Preferred_expansion =="ExternalExpansionPreferred":
             self.adap = True
@@ -69,7 +69,7 @@ class AdapOnFields(OnFields):
             self.w_a = self.ext_w_a
             self.corpus_size = self.ext_corpus_size
             
-            return(super().get_expanded_query(q, [qid]))
+            return super().get_expanded_query(q, [qid])
 
     def get_model_name(self):
         return super().get_model_name().replace('topn{}'.format(self.topn),

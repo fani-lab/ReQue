@@ -11,8 +11,8 @@ class AbstractQExpander:
         self.replace = replace
         self.topn = topn
 
-    def get_expanded_query(self, q, args=None):
-        return q
+    # all children expanders must call this in the returning line
+    def get_expanded_query(self, q, args=None): return q, args
 
     def get_model_name(self):
         if self.__class__.__name__ == 'AbstractQExpander':
@@ -39,12 +39,14 @@ class AbstractQExpander:
                     if '<num>' in line:
                         qid = int(line[line.index(':') + 1:])
                         Q_file.write(line)
-                    elif line[:7] == '<title>':#for robust & gov2
+                    elif line[:7] == '<title>':  # for robust & gov2
                         q = line[8:].strip()
                         if not q: q = next(Qfile).strip()
                         try:
-                            q_ = self.get_expanded_query(q, [qid])
+                            q_, args = self.get_expanded_query(q, args=[qid])
                             q_ = utils.clean(q_) if clean else q_
+                            if model_name.__contains__('backtranslation'):
+                                Q_file.write(f'<semsim> {args[0]:.4f} </semsim>\n') # write the semsim score in the txt file under <semsim> tag!
                         except:
                             print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
                             print(traceback.format_exc())
@@ -101,6 +103,7 @@ class AbstractQExpander:
                 # for files with tag
                 if '<top>' in line and not is_tag_file: is_tag_file = True
                 if '<num>' in line: qid = line[line.index(':') + 1:].strip()
+                elif '<semsim>' in line: score = line[8:-10] + ' '
                 # for robust & gov2
                 elif line[:7] == '<title>': q_ = line[8:].strip() + ' '
                 elif '<topic' in line:
@@ -113,7 +116,11 @@ class AbstractQExpander:
                     qid = line.split('\t')[0].rstrip()
                     q_= line.split('\t')[1].rstrip()
                 else: continue
-                if q_: Q_ = pd.concat([Q_, pd.DataFrame([{'qid': qid, model_name: q_}])], ignore_index=True)
+                if q_:
+                    new_line = {'qid': qid, model_name: q_}
+                    # For backtranslation expander add a new column as semsim
+                    if model_name.__contains__('backtranslation'): new_line['semsim'] = score
+                    Q_ = pd.concat([Q_, pd.DataFrame([new_line])], ignore_index=True)
         return Q_.astype({'qid': 'str'})
 
 if __name__ == "__main__":

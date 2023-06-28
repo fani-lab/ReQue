@@ -147,12 +147,13 @@ def aggregate(expanders, rankers, metrics, output):
             for metric in metrics:
                 Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}.txt'
                 # the last row is average over all. skipped by [:-1]
-                values = pd.read_csv(Q_eval, usecols=[1, 2], names=['qid', 'value'], header=None, sep='\t')[:-1]
-                values.set_index('qid', inplace=True, verify_integrity=True)
 
+                values = pd.read_csv(Q_eval, usecols=[1, 2], names=['qid', 'value'], header=None, sep='\t')[:-1]
+
+                values.set_index('qid', inplace=True, verify_integrity=True)
                 for idx, r in Q_.iterrows():
-                    Q_.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[
-                        str(r.qid), 'value'] if str(r.qid) in values.index else None
+                    Q_.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[str(r.qid), 'value'] if str(r.qid) in values.index else None
+
 
         # except:
         #     model_errs[model_name] = traceback.format_exc()

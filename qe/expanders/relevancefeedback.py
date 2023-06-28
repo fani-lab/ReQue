@@ -51,7 +51,7 @@ class RelevanceFeedback(AbstractQExpander):
                     i = i+1
                     if i >= self.topn:
                         break
-        return relevant_documents
+        return super().get_expanded_query(relevant_documents)
 
     def get_tfidf(self, docid):
         #command = "target/appassembler/bin/IndexUtils -index lucene-index.robust04.pos+docvectors+rawdocs -dumpDocVector FBIS4-40260 -docVectorWeight TF_IDF "

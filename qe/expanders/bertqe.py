@@ -64,7 +64,7 @@ class BertQE(RelevanceFeedback):
         normalized_chunks[q]=1.5
         for i in range(5):
             normalized_chunks[list(chunk_scores.keys())[i]]=norm[i]
-        return str(normalized_chunks)
+        return super().get_expanded_query(str(normalized_chunks))
 
     def write_expanded_queries(self, Qfilename, Q_filename,clean=False):
         return super().write_expanded_queries(Qfilename, Q_filename, clean=False)

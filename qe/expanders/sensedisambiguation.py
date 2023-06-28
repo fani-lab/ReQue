@@ -21,7 +21,7 @@ class SenseDisambiguation(AbstractQExpander):
                     res.append(' '.join(x))
             else:
                 res.append(t[0])
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
 
 
 if __name__ == "__main__":

@@ -93,7 +93,7 @@ class Docluster(RelevanceFeedback):
             if word.lower() not in query_splited:
                 query_splited.append(word)
 
-        return ' '.join(query_splited)
+        return super().get_expanded_query(' '.join(query_splited))
 
     def get_top_k(self, pairlist, k):
         output = []

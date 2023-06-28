@@ -35,7 +35,7 @@ class RM3(RelevanceFeedback):
         # q_ = self.parse_rm3_log(rm3_log)
         # os.remove("rm3.log")
 
-        return q_
+        return super().get_expanded_query(q_)
 
     def get_model_name(self):
         return super().get_model_name().replace('topn{}'.format(self.topn), 'topn{}.{}.{}'.format(self.topn, self.topw, self.original_q_w))
