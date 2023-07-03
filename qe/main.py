@@ -95,7 +95,7 @@ def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
                 with open(Q_pred, 'w', encoding='UTF-8') as run_file, open(Q_filename, 'r', encoding='UTF-8') as qlines:
                     for line in qlines.readlines():
                         retrieved_docs = []
-                        qid, qtext = line.split('\t')
+                        qid, qtext = line.split('\t')[0], line.split('\t')[1]
                         hits = searcher.search(qtext, k=hitsnumber)
                         for i in range(len(hits)):
                             if hits[i].docid not in retrieved_docs:
