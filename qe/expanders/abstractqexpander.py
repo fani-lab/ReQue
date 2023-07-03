@@ -24,12 +24,12 @@ class AbstractQExpander:
             q_, args = self.get_expanded_query(q, args=[qid])
             q_ = utils.clean(q_) if clean else q_
         except:
-            print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
+            print(f'WARNING: MAIN: {self.get_model_name()}: Expanding query [{qid}:{q}] failed!')
             print(traceback.format_exc())
             q_ = q
 
         Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
-        print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
+        print(f'INFO: MAIN: {self.get_model_name()}: {qid}: {q} -> {q_}')
         return q_, args, Q_
 
     def write_expanded_queries(self, Qfilename, Q_filename, clean=True):
@@ -40,14 +40,15 @@ class AbstractQExpander:
         is_tag_file = False
         with open(Qfilename, 'r', encoding='UTF-8') as Qfile:
             with open(Q_filename, 'w', encoding='UTF-8') as Q_file:
-                print('INFO: MAIN: {}: Expanding queries in {} ...'.format(self.get_model_name(), Qfilename))
+                print(f'INFO: MAIN: {self.get_model_name()}: Expanding queries in {Qfilename} ...')
                 for line in Qfile:
                     # For txt files
                     if '<top>' in line and not is_tag_file: is_tag_file = True
                     if '<num>' in line:
                         qid = int(line[line.index(':') + 1:])
                         Q_file.write(line)
-                    elif line[:7] == '<title>':  # for robust & gov2
+                    # For robust & gov2
+                    elif line[:7] == '<title>':
                         q = line[8:].strip()
                         if not q: q = next(Qfile).strip()
                         q_, args, Q_ = self.generate_query(q, qid, clean, model_name, Q_)
@@ -62,19 +63,8 @@ class AbstractQExpander:
                     elif line[2:9] == '<query>':
                             q = line[9:-9]
                             q_, args, Q_ = self.generate_query(q, qid, clean, model_name, Q_)
-                            # try:
-                            #     q_, args = self.get_expanded_query(q, [qid])
-                            #     if model_name.__contains__('backtranslation'): score = args[0]
-                            #     q_ = utils.clean(q_) if clean else q_
-                            # except:
-                            #     print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
-                            #     print(traceback.format_exc())
-                            #     q_ = q
-                            # Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
-                            # print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             if model_name.__contains__('backtranslation'): Q_file.write(f'<semsim> {args[0]:.4f} </semsim>\n')
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
-
                     # For tsv files
                     elif len(line.split('\t')) >= 2 and not is_tag_file:
                         qid = int(line.split('\t')[0].rstrip())
@@ -91,7 +81,7 @@ class AbstractQExpander:
         Q_ = pd.DataFrame(columns=['qid'], dtype=int)
         is_tag_file = False
         with open(Q_filename, 'r',encoding='UTF-8') as Q_file:
-            print('INFO: MAIN: {}: Reading expanded queries in {} ...'.format(self.get_model_name(), Q_filename))
+            print(f'INFO: MAIN: {self.get_model_name()}: Reading expanded queries in {Q_filename} ...')
             for line in Q_file:
                 q_ = None
                 # for files with tag
