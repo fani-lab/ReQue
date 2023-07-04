@@ -66,7 +66,7 @@ class Wiki(Word2Vec):
                     res.append(u.replace("_", " "))
 
             res.append(c)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
 
 
 if __name__ == "__main__":

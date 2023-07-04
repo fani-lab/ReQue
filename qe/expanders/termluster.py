@@ -29,7 +29,7 @@ class Termluster(RelevanceFeedback):
         # add three relevant words from each cluster for each query word
         expanded_query = self.expand_query_term_cluster(q, G, cluster_dict, k_relevant_words=self.topw)
 
-        return expanded_query
+        return super().get_expanded_query(expanded_query)
 
     def make_graph_document(self, list_s, min_edge):
         G = nx.Graph()

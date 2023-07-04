@@ -29,7 +29,7 @@ class Thesaurus(AbstractQExpander):
                 else:
                     q_.append(' '.join(syn))
 
-        return ' '.join(q_)
+        return super().get_expanded_query(' '.join(q_))
 
 
     def get_synonym(self, word, pos="noun"):

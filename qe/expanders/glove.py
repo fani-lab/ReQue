@@ -39,7 +39,7 @@ class Glove(AbstractQExpander):
                         res.append(u)
             if not found_flag and self.replace:
                 res.append(qw)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
 
 
 def load_glove_model(glove_file):

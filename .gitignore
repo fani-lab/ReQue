@@ -10,6 +10,8 @@ pre/
 anserini/
 !anserini/gitkeep
 
+pyserini/
+
 ds/clueweb09b/*
 !ds/clueweb09b/gitkeep
 !ds/clueweb09b/lucene-index.clueweb09b.pos+docvectors+rawdocs/
@@ -72,4 +74,6 @@ ds/qs/clueweb12b13.topn1
 ds/qs/clueweb12b13.topn100
 
 qs/cair/data/fasttext/crawl-300d-2M-subword.vec
-qs/cair/data/
+
+qe/output/*
+ds/*

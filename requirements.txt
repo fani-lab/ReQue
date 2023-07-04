@@ -1,5 +1,6 @@
-#python3.8
-anserini
+# python==3.8
+# anserini
+# Could not find a version that satisfies the requirement anserini (from versions: none)!
 community
 gensim==4.*
 networkx
@@ -18,8 +19,10 @@ tensorboard>=2.1.0
 tensorflow>=2.2.0rc1
 tokenizers==0.9.4
 tqdm==4.45.0
+# tqdm>=4.48.0 is needed in order to install panel package!
 transformers==4.0.0
-sentencepiece==0.1.9
+# sentencepiece==0.1.9
+# Could not find a version that satisfies the requirement sentencepiece==0.1.9 >>> sentencepiece==0.1.99
 pyserini
 prettytable==2.1.0
 seaborn

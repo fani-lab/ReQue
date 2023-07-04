@@ -12,7 +12,7 @@ class Stem(AbstractQExpander):
         return super().get_model_name() + '.' + self.stemmer.basename
 
     def get_expanded_query(self, q, args=None):
-        return self.stemmer.stem_query(q)
+        return super().get_expanded_query(self.stemmer.stem_query(q))
 
 if __name__ == "__main__":
     from qe.stemmers.krovetz import KrovetzStemmer

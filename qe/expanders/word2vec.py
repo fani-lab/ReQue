@@ -36,7 +36,8 @@ class Word2Vec(AbstractQExpander):
                         res.append(u)
             if not found_flag and self.replace:
                 res.append(qw)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
+
 
 if __name__ == "__main__":
     qe = Word2Vec('../pre/wiki-news-300d-1M.vec')

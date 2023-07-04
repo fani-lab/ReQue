@@ -49,7 +49,7 @@ class Conceptnet(AbstractQExpander):
                         res.append(obj['edges'][i]['start']['label'])
             if not found_flag and self.replace:
                 res.append(q)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
 
 
 if __name__ == "__main__":

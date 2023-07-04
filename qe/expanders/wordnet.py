@@ -35,7 +35,8 @@ class Wordnet(AbstractQExpander):
 
             if not found_flag and self.replace:
                 res.append(w)
-        return ' '.join(res)
+        return super().get_expanded_query(' '.join(res))
+
 
 if __name__ == "__main__":
     qe = Wordnet()
