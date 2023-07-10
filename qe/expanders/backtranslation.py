@@ -31,6 +31,7 @@ class BackTranslation(AbstractQExpander):
 
         score = self.semsim(q, back_translated_query[0]['translation_text'])
         return super().get_expanded_query(back_translated_query[0]['translation_text'], [score])
+        # return super().get_expanded_query(q, [0])
 
     # Returns the name of the model ('backtranslation) with name of the target language
     # Example: 'backtranslation_fra_latn'

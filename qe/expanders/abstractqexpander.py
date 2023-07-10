@@ -63,15 +63,24 @@ class AbstractQExpander:
                     elif line[2:9] == '<query>':
                             q = line[9:-9]
                             q_, args, Q_ = self.generate_query(q, qid, clean, model_name, Q_)
+                            # try:
+                            #     q_, args = self.get_expanded_query(q, [qid])
+                            #     if model_name.__contains__('backtranslation'): score = args[0]
+                            #     q_ = utils.clean(q_) if clean else q_
+                            # except:
+                            #     print('WARNING: MAIN: {}: Expanding query [{}:{}] failed!'.format(self.get_model_name(), qid, q))
+                            #     print(traceback.format_exc())
+                            #     q_ = q
+                            # Q_ = pd.concat([Q_, pd.DataFrame([{model_name: q_}])], ignore_index=True)
+                            # print('INFO: MAIN: {}: {}: {} -> {}'.format(self.get_model_name(), qid, q, q_))
                             if model_name.__contains__('backtranslation'): Q_file.write(f'<semsim> {args[0]:.4f} </semsim>\n')
                             Q_file.write('  <query>' + str(q_) + '</query>' + '\n')
                     # For tsv files
                     elif len(line.split('\t')) >= 2 and not is_tag_file:
-                        qid = int(line.split('\t')[0].rstrip())
+                        qid = line.split('\t')[0].rstrip()
                         q = line.split('\t')[1].rstrip()
                         q_, args, Q_ = self.generate_query(q, qid, clean, model_name, Q_)
-                        #TODO check if it is possible to concat the generate_query and expanded_query
-                        Q_file.write(str(qid) + '\t' + str(q_))
+                        Q_file.write(qid + '\t' + str(q_))
                         Q_file.write('\t' + str(args[0]) + '\n') if model_name.__contains__('backtranslation') else Q_file.write('\n')
                     else: Q_file.write(line)
         return Q_
