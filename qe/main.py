@@ -237,9 +237,9 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
     elif corpus == 'orcas': topicreader = 'TsvInt'
     # The 672 query (topic) has no qrels (document judge relevant)
     elif corpus == 'robust04': topicreader = 'Trec'
-    elif corpus == 'gov2':  topicreader = 'Trec'; middle = 'topics.terabyte0';  r.append(['4.701-750', '5.751-800', '6.801-850']); results = []
-    elif corpus == 'clueweb09b': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['1-50', '51-100', '101-150', '151-200']);results = []
-    elif corpus == 'clueweb12b13': topicreader = 'Webxml'; middle = 'topics.web'; r.append(['201-250', '251-300']); results = []
+    elif corpus == 'gov2':  topicreader = 'Trec'; output += 'topics.terabyte0';  r = ['4.701-750', '5.751-800', '6.801-850']; number = '701-850'; results = []
+    elif corpus == 'clueweb09b': topicreader = 'Webxml'; output += 'topics.web.'; r = ['1-50', '51-100', '101-150', '151-200']; number = '1-200'; results = []
+    elif corpus == 'clueweb12b13': topicreader = 'Webxml'; output += 'topics.web.'; r = ['201-250', '251-300']; number = '201-300'; results = []
     else: print('Please choose a corpus between these:' + ', '.join(param.corpora.keys())); exit()
 
     if len(r) == 0:
@@ -247,13 +247,17 @@ def run(corpus, rankers, metrics, output, rf=True, op=[]):
         result = initialize(corpus, rankers, metrics, output_, rf, op, topicreader)
 
     else:
+        topics = param.corpora[corpus]['topics']
+        qrels = param.corpora[corpus]['qrels']
         for i in r:
-            output_ = f'{output}{middle}.{corpus}.{i}'
+            output_ = output + i
+            param.corpora[corpus]['topics'] = topics.replace("{}", i)
+            param.corpora[corpus]['qrels'] = qrels.replace("{}", i)
             result = initialize(corpus, rankers, metrics, output_, rf, op, topicreader)
             if 'build' in op: results.append(result)
 
         if 'build' in op:
-            output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', '.clueweb12b13.').replace(results[0].split('/')[-1].split('.')[2], '201-300')
+            output_ = results[0].replace('.' + results[0].split('/')[-1].split('.')[1] + '.', f'.{corpus}.').replace(results[0].split('/')[-1].split('.')[2], number)
             df = pd.DataFrame()
             for r in results: df = pd.concat([df, pd.read_csv(r)], axis=0, ignore_index=True, sort=False)
             df.to_csv(output_, index=False)
@@ -287,6 +291,6 @@ if __name__ == "__main__":
     run(corpus=args.corpus.lower(),
         rankers=['-' + ranker for ranker in args.rankers],
         metrics=args.metrics,
-        output=args.output,
+        output=args.output + args.corpus.lower() + '/',
         rf=True,
         op=param.ReQue['op'])

@@ -59,7 +59,7 @@ corpora = {
     'gov2': {
         'index': '../ds/gov2/lucene-index.gov2.pos+docvectors+rawdocs',
         'size': 25000000,
-        'topics': '../ds/gov2/{}.terabyte0{}.txt',  # {} is a placeholder for subtopics in main.py -> run()
+        'topics': '../ds/gov2/topics.terabyte0{}.txt',  # {} is a placeholder for subtopics in main.py -> run()
         'prels': '',  # this will be generated after a retrieval {bm25, qld}
         'w_t': 4,     # OnFields
         'w_a': 0.25,  # OnFields
