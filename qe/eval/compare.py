@@ -102,6 +102,26 @@ def get_input():
 
     return options
 
+def analysis(infile_df, outfile_path):
+    with open(outfile_path + ".txt", "w") as file:
+        for column in range(3, len(infile_df.columns), 4):
+
+            # output language name
+            file.write("<lang> " + str(infile_df.columns.tolist()[column + 1])[16:])
+            file.write("\n")
+
+            for row in range(len(infile_df.iloc[:, column])):
+
+                # output format: <qid> <abstractqueryexpansion> <abstractqueryexpansion.bm25.map> <backtranslation_pes_arab> <semsim> <backtranslation_pes_arab.bm25.map> <subtraction>
+                file.write(str(infile_df.iloc[row, column]) +
+                           "\t" + str(infile_df.iloc[row, 1]) +
+                           "\t" + str(infile_df.iloc[row, 2]) +
+                           "\t" + str(infile_df.iloc[row, column + 1]) +
+                           "\t" + str(infile_df.iloc[row, column + 2]) +
+                           "\t" + str(infile_df.iloc[row, column + 3]) +
+                           "\t" + str(infile_df.iloc[row, column + 3] - infile_df.iloc[row, 2]))
+                file.write("\n")
+
 
 if __name__ == '__main__':
     columns = get_input()
