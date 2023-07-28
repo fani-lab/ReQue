@@ -269,7 +269,7 @@ def addargs(parser):
     gold = parser.add_argument_group('Gold Standard Dataset')
     gold.add_argument('--output', type=str, required=True, help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
     gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld'], default=['bm25', 'qld'], help='The ranker names (default: bm25 qld)')
-    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg'], default=['map', 'ndcg'], help='The evaluation metric names (default: map ndcg)')
+    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg', 'recip_rank'], default=['map', 'recip_rank'], help='The evaluation metric names (default: map ndcg)')
 
 
 # # python -u main.py --corpus robust04 --output ./output/robust04/ --rankers bm25 qld --metrics map ndcg 2>&1 | tee robust04.log &
