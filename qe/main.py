@@ -2,8 +2,11 @@
 import os, traceback, math, threading, time
 import pandas as pd
 import argparse
-from pyserini.search.lucene import querybuilder
-from pyserini.search.lucene import LuceneSearcher
+
+# Sparse Retrieval
+from pyserini.search.lucene import LuceneSearcher, querybuilder
+# Dense Retrieval
+from pyserini.search.faiss import FaissSearcher, TctColBertQueryEncoder
 
 # build anserini (maven) for doing A) indexing, B) information retrieval, and C) evaluation
 # A) INDEX DOCUMENTS
@@ -32,8 +35,7 @@ from pyserini.search.lucene import LuceneSearcher
 # Q: set of queries
 # q_: expanded query (q')
 # Q_: set of expanded queries(Q')
-from cmn import param
-from cmn import utils
+from cmn import param, utils
 from cmn import expander_factory as ef
 from expanders.abstractqexpander import AbstractQExpander
 from expanders.onfields import OnFields
@@ -42,30 +44,34 @@ from expanders.onfields import OnFields
 # from expanders.bertqe import BertQE
 
 def generate(Qfilename, expander, output):
-    df = pd.DataFrame()
-    model_errs = dict()
     model_name = expander.get_model_name()
     try:
         Q_filename = f'{output}.{model_name}.txt'
         # if not os.path.isfile(Q_filename) or overwrite:
-        expander.write_expanded_queries(Qfilename, Q_filename)
+        # old_method
+        # expander.write_expanded_queries(Qfilename, Q_filename)
+        expander.generate_queue(Qfilename, Q_filename)
     except: print(f'INFO: MAIN: GENERATE: There has been error in {expander}!\n{traceback.format_exc()}'); raise
 
 
-def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
-    # Information Retrieval using Anserini
-    rank_cmd = f'{anserini}target/appassembler/bin/SearchCollection'
-
+def search(expander, rankers, topicreader, corpus, hitsnumber, output):
     model_name = expander.get_model_name()
     try:
         Q_filename = f'{output}.{model_name}.txt'
+        if expander.query_set.empty: expander.query_set = expander.read_queries(Q_filename)
         for ranker in rankers:
-
             Q_pred = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.txt'
             q_dic = {}
-            searcher = LuceneSearcher(index)
-            if ranker == '-bm25': searcher.set_bm25(0.9, 0.4)
-            elif ranker == '-qld': searcher.set_qld()
+
+            index = param.corpora[corpus]['dense_index'] if ranker == 'tct_colbert' else param.corpora[corpus]['dense_index']
+
+            if ranker == '-tct_colbert':
+                encoder = TctColBertQueryEncoder(param.settings['encoder'])
+                searcher = FaissSearcher.from_prebuilt_index(index, encoder)
+            else:
+                searcher = LuceneSearcher(index)
+                if ranker == '-bm25': searcher.set_bm25(0.9, 0.4)
+                elif ranker == '-qld': searcher.set_qld()
 
             if isinstance(expander, OnFields):  # or isinstance(expander, BertQE)
                 run_file = open(Q_pred, 'w')
@@ -91,63 +97,58 @@ def search(expander, rankers, topicreader, hitsnumber, index, anserini, output):
                         except: pass
                 run_file.close()
 
-            elif topicreader == 'TsvString' or topicreader == 'TsvInt':
-                with open(Q_pred, 'w', encoding='UTF-8') as run_file, open(Q_filename, 'r', encoding='UTF-8') as qlines:
-                    for line in qlines.readlines():
+            else:
+                with open(Q_pred, 'w', encoding='UTF-8') as run_file:
+                    for index, row in expander.query_set.iterrows():
                         retrieved_docs = []
-                        qid, qtext = line.split('\t')[0], line.split('\t')[1]
+                        qid, qtext = row['qid'], row[model_name]
                         hits = searcher.search(qtext, k=hitsnumber)
                         for i in range(len(hits)):
                             if hits[i].docid not in retrieved_docs:
                                 retrieved_docs.append(hits[i].docid)
                                 run_file.write(f'{qid} Q0  {hits[i].docid:15} {i + 1:2} {hits[i].score:.5f} Pyserini\n')
 
-            else:
-                cli_cmd = f'\"{rank_cmd}\" {ranker} -threads 44 -topicreader {topicreader} -index {index} -topics {Q_filename} -output {Q_pred}'
-                print(f'{cli_cmd}\n')
-                stream = os.popen(cli_cmd)
-                print(stream.read())
     # all exception related to calling the SearchCollection cannot be captured here!! since it is outside the process scope
     except: print(f'INFO: MAIN: SEARCH: There has been error in {expander}!\n{traceback.format_exc()}'); raise
 
 
-def evaluate(expander, Qrels, rankers, metrics, eval_cmd, output):
+def evaluate(expander, Qrels, rankers, metrics, output):
     # Evaluation using trec_eval
-    model_errs = dict()
     model_name = expander.get_model_name()
     try:
         for ranker in rankers:
             Q_pred = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.txt'
             for metric in metrics:
                 Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}.txt'
-                cli_cmd = f'\"{eval_cmd}\" -q -m {metric} {Qrels} {Q_pred} > {Q_eval}'
+                cli_cmd = f'"{param.settings["treclib"]}" -m {metric} -q {Qrels} {Q_pred} > {Q_eval}'
                 print(cli_cmd)
                 stream = os.popen(cli_cmd)
                 print(stream.read())
-    except:  # all exception related to calling the trec_eval cannot be captured here!! since it is outside the process scope
-        print(f'INFO: MAIN: EVALUATE: There has been error in {expander}!\n{traceback.format_exc()}')
+    # all exception related to calling the trec_eval cannot be captured here!! since it is outside the process scope
+    except: print(f'INFO: MAIN: EVALUATE: There has been error in {expander}!\n{traceback.format_exc()}')
 
 
 def aggregate(expanders, rankers, metrics, output):
     df = pd.DataFrame()
-    model_errs = dict()
-    queryids = pd.DataFrame()
+    # model_errs = dict()
+    # queryids = pd.DataFrame()
     for model in expanders:
         model_name = model.get_model_name()
         # try:
         Q_filename = f'{output}.{model_name}.txt'
-        Q_ = model.read_expanded_queries(Q_filename)
+        # Q_ = model.read_expanded_queries(Q_filename)
+        if model.query_set.empty: model.query_set = model.read_queries(Q_filename)
         for ranker in rankers:
             for metric in metrics:
                 Q_eval = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.{metric}.txt'
                 # the last row is average over all. skipped by [:-1]
                 values = pd.read_csv(Q_eval, usecols=[1, 2], names=['qid', 'value'], header=None, sep='\t')[:-1]
                 values.set_index('qid', inplace=True, verify_integrity=True)
-                for idx, r in Q_.iterrows(): Q_.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[str(r.qid), 'value'] if str(r.qid) in values.index else None
+                for idx, r in model.query_set.iterrows(): model.query_set.loc[idx, f'{model_name}.{utils.get_ranker_name(ranker)}.{metric}'] = values.loc[str(r.qid), 'value'] if str(r.qid) in values.index else None
         # except:
         #     model_errs[model_name] = traceback.format_exc()
         #     continue
-        df = pd.concat([df, Q_], axis=1)
+        df = pd.concat([df, model.query_set], axis=1)
 
     filename = f"{output}.{'.'.join([utils.get_ranker_name(r) for r in rankers])}.{'.'.join(metrics)}.all.csv"
     df.to_csv(filename, index=False)
@@ -192,13 +193,13 @@ def build(input, expanders, rankers, metrics, output):
 
 def worker(corpus, rankers, metrics, op, output_, topicreader, expanders):
     exceptions = {}
-    #todo: make it multiprocess
 
+    #TODO: make it message queue
     def worker_thread(expander):
         try:
             if 'generate' in op: generate(Qfilename=param.corpora[corpus]['topics'], expander=expander, output=output_)
-            if 'search' in op: search(expander=expander, rankers=rankers, hitsnumber=param.settings['search']['hitsnumber'], topicreader=topicreader, index=param.corpora[corpus]['index'], anserini=param.anserini['path'], output=output_)
-            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers, metrics=metrics, eval_cmd=param.anserini['trec_eval'], output=output_)
+            if 'search' in op: search(expander=expander, rankers=rankers, hitsnumber=param.settings['hitsnumber'], topicreader=topicreader, corpus=corpus, output=output_)
+            if 'evaluate' in op: evaluate(expander=expander, Qrels=param.corpora[corpus]['qrels'], rankers=rankers, metrics=metrics, output=output_)
         except:
             print(f'INFO: MAIN: THREAD: {threading.currentThread().getName()}: There has been error in {expander}!\n{traceback.format_exc()}')
             exceptions[expander.get_model_name()] = traceback.format_exc()
@@ -217,7 +218,7 @@ def initialize(corpus, rankers, metrics, output, rf=True, op=[], topicreader="")
     # local analysis
     if rf: expanders += ef.get_rf_expanders(rankers=rankers, corpus=corpus, output=output, ext_corpus=param.corpora[corpus]['extcorpus'])
 
-    threads, exceptions = worker(corpus, rankers, metrics, op, output, topicreader, expanders)
+    threads, exceptions = worker(corpus=corpus, rankers=rankers, metrics=metrics, op=op, output_=output, topicreader=topicreader, expanders=expanders)
     for thread in threads: thread.join()
     expanders = [e for e in expanders if e.get_model_name() not in exceptions.keys()]
 
@@ -268,7 +269,7 @@ def addargs(parser):
     corpus.add_argument('--corpus', type=str, choices=['dbpedia', 'antique', 'robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'trec09mq', 'orcas', 'testds'], required=True, help='The corpus name; required; (example: robust04)')
     gold = parser.add_argument_group('Gold Standard Dataset')
     gold.add_argument('--output', type=str, required=True, help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
-    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld'], default=['bm25', 'qld'], help='The ranker names (default: bm25 qld)')
+    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld', 'tct_colbert'], default=['bm25', 'qld', 'tct_colbert'], help='The ranker names (default: bm25 qld)')
     gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg', 'recip_rank'], default=['map', 'recip_rank'], help='The evaluation metric names (default: map ndcg)')
 
 
