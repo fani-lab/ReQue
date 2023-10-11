@@ -204,28 +204,157 @@ def analyze_improved_queries_all_dataset(source, infile_path):
             file.write('\n')
 
 
+def draw_similarity_chart(source):
+    infile_df = pd.read_csv(f'{source}results/all.queries.all.datasets.csv')
+    fig, ax = plt.subplots()
+    infile_df = infile_df.fillna(0)
+    colors = ["#FF573300",  "#FFC30000",  "#FFDC0000",  "#C2FF3300",  "#00FFA700",  "#0082FF00",  "#7800FF00",  "#FF00E500",  "#FF007700",  "#00FFCC00",  "#0082FF00"]
+
+    original_terms = list(infile_df[infile_df['metrics'] == 'bm25.map'][infile_df['lang'] == 'fra_latn']['original_query'])
+    unique_languages = list(set(infile_df['lang']))
+    for index, lang in enumerate(unique_languages):
+        q_qprim = []
+        for i, ot in enumerate(original_terms):
+            q_qprim.append(list(infile_df[infile_df['original_query'] == ot][infile_df['lang'] == lang][infile_df['metrics'] == 'bm25.map']['semsim'])[0])
+        ax.hist(q_qprim, label=f'{lang}', range=(0, 1), alpha=0.5, color=colors[index], edgecolor='black')
+
+    ax.set_xlabel('#tokens', fontsize=20, labelpad=10)
+    ax.set_ylabel('count', fontsize=20, labelpad=10)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.72, 1.2), fontsize=20)
+    plt.xticks(rotation=45, ha='right', fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.grid()
+    plt.savefig(f'{source}results/semsim_histogram.png', dpi=100, bbox_inches='tight')
+    plt.show()
+
+
+def draw_count_chart(source):
+    infile_df = pd.read_csv(f'{source}results/all.queries.all.datasets.csv')
+    new_df = pd.DataFrame()
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+
+    colors = ["#FF573300",  "#FFC30000",  "#FFDC0000",  "#C2FF3300",  "#00FFA700",  "#0082FF00",  "#7800FF00",  "#FF00E500",  "#FF007700",  "#00FFCC00",  "#0082FF00"]
+
+    # Extract data for plotting
+    original_count = list(map(count_words, list(infile_df[infile_df['metrics'] == 'bm25.map'][infile_df['lang'] == 'fra_latn']['original_query'])))
+    new_df['o_count'] = original_count
+    ax.hist(original_count, label='original_query', alpha=0.4, color=colors[0], edgecolor=colors[0])
+    langs = infile_df['lang']
+
+    unique_languages = list(set(langs))
+    # colors = plt.cm.get_cmap('tab20', len(unique_languages))
+    for index, lang in enumerate(unique_languages):
+        backtranslated_count = list(map(count_words, list(infile_df[infile_df['lang'] == lang][infile_df['metrics'] == 'bm25.map']['backtranslated_query'])))
+        new_df[f'b_count_{lang}'] = backtranslated_count
+        ax.hist(backtranslated_count, label=f'{lang}', range=(0, 20), alpha=0.5, color=colors[index+1], edgecolor='black')
+
+    ax.set_xlabel('#tokens', fontsize=20, labelpad=10)
+    ax.set_ylabel('count', fontsize=20, labelpad=10)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.72, 1.2), fontsize=20)
+    plt.xticks(rotation=45, ha='right', fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.grid()
+    plt.savefig(f'{source}results/count_histogram.png', dpi=100, bbox_inches='tight')
+    plt.show()
+    new_df.to_csv(source + "results/count_tokens.csv")
+
+
+def count_words(term):
+    if type(term) == float: return 0
+    return len(term.split())
+
+
+def count_word_differences(original, backtranslated):
+    words1 = original.split()
+    words2 = backtranslated.split()
+    return abs(len(words2) - len(words1))
+
+
 def get_improved_data_all_dataset(source, corpora):
     metrics = ['bm25.map', 'bm25.recip_rank', 'qld.map', 'qld.recip_rank']
+    csv_result = pd.DataFrame(columns=['corpus', 'qid', 'original_query', 'original_query_eval', 'metrics', 'lang', 'backtranslated_query', 'semsim', 'backtranslated_query_eval', 'original-backtranslated'])
+    outfile_path = source + "results/" + f"improved.queries.all.datasets.csv"
+    # outfile_path = source + "results/improved.queries.all.datasets.csv"
     for index, each_metric in enumerate(metrics):
-        outfile_path = source + "results/" + f"{each_metric}.improved.queries.all.datasets.txt"
-        with open(outfile_path, "w") as file:
-            for corpus in corpora:
-                file.write('<corpus> ' + corpus.split(".")[0] + '\n')
-                infile_df = pd.read_csv(f'{source}{corpus.split(".")[0]}/topics.{corpus}.bm25.qld.map.recip_rank.all.csv')
-                for column in range(6, len(infile_df.columns), 7):
-                    # output language name
-                    file.write('<lang> ' + str(infile_df.columns.tolist()[column + 1])[16:] + '\n')
-                    for row in range(len(infile_df.iloc[:, column])):
-                        if (infile_df.iloc[row, column + 3 + index] - infile_df.iloc[row, index + 2]) > 0:
-                            # output format: <qid> <original_query> <original_query_eval> <backtranslation_Lang> <semsim> <backtranslation_Lang_eval> <subtraction(original - backtranslation)>
-                            file.write(str(infile_df.iloc[row, 0]) +
-                                       "\t" + str(infile_df.iloc[row, 1]) +
-                                       "\t" + str(infile_df.iloc[row, index + 2]) +
-                                       "\t" + str(infile_df.iloc[row, column + 1]) +
-                                       "\t" + str(infile_df.iloc[row, column + 2]) +
-                                       "\t" + str(infile_df.iloc[row, column + 3 + index]) +
-                                       "\t" + str(infile_df.iloc[row, column + 3 + index] - infile_df.iloc[row, 2 + index]))
-                            file.write("\n")
+        for corpus in corpora:
+            infile_df = pd.read_csv(f'{source}{corpus.split(".")[0]}/topics.{corpus}.bm25.qld.map.recip_rank.all.csv')
+            for column in range(6, len(infile_df.columns), 7):
+                for row in range(len(infile_df.iloc[:, column])):
+                    # Accept only improved queries
+                    if (infile_df.iloc[row, column + 3 + index] - infile_df.iloc[row, index + 2]) > 0:
+                    # output format: 'corpus', 'qid', 'original_query', 'original_query_eval', 'metrics, 'lang', 'backtranslated_query', 'semsim', 'backtranslated_query_eval', 'original-backtranslated'
+                        new_line = []
+                        new_line.append(corpus.split(".")[0])
+                        new_line.append(str(infile_df.iloc[row, 0]))
+                        new_line.append(str(infile_df.iloc[row, 1]))
+                        new_line.append(str(infile_df.iloc[row, index + 2]))
+                        new_line.append(str(each_metric))
+
+                        new_line.append(str(infile_df.columns.tolist()[column + 1])[16:])
+                        new_line.append(str(infile_df.iloc[row, column + 1]))
+                        new_line.append(str(infile_df.iloc[row, column + 2]))
+                        new_line.append(str(infile_df.iloc[row, column + 3 + index]))
+                        new_line.append(str(infile_df.iloc[row, column + 3 + index] - infile_df.iloc[row, 2 + index]))
+
+                    csv_result.loc[len(csv_result)] = new_line
+
+    csv_result.to_csv(outfile_path)
+
+
+def compare_expanders(source, corpora):
+    metrics = ['bm25.map', 'bm25.recip_rank', 'qld.map', 'qld.recip_rank']
+    outfile_path = source + "results/" + f"all.queries.all.datasets.all.expanders.csv"
+    compare_result = pd.DataFrame(columns=['corpus', 'Expander', 'avg.bm25.map', 'avg.bm25.recip_rank', 'avg.qld.map', 'avg.qld.recip_rank', '#.bm25.map', 'delta.metric.bm25.map', '#.bm25.recip_rank', 'delta.metric.bm25.recip_rank', '#.qld.map', 'delta.metric.qld.map', '#.qld.recip_rank', 'delta.metric.qld.recip_rank'])
+    q_star=dict()
+    for corpus in corpora:
+        q_star[corpus]=dict()
+        # Calculate averages
+        infile_df = pd.read_csv(f'{source}{corpus.split(".")[0]}/topics.{corpus}.bm25.qld.map.recip_rank.all.csv')
+        new_line = []
+        for column in range(6, len(infile_df.columns), 6):
+            new_line.append(corpus)                                       # corpus
+            new_line.append(str(infile_df.columns.tolist()[column + 1]))  # Expander's name
+            new_line.append(str(infile_df.iloc[:, column + 2].mean()))    # Average bm25.map
+            new_line.append(str(infile_df.iloc[:, column + 3].mean()))    # Average bm25.recip_rank
+            new_line.append(str(infile_df.iloc[:, column + 4].mean()))    # Average qld.map
+            new_line.append(str(infile_df.iloc[:, column + 5].mean()))    # Average qld.recip_rank
+
+
+            q_star[corpus][str(infile_df.columns.tolist()[column + 1])] = [0,0,0,0,0,0,0,0]
+            for row in range(len(infile_df.iloc[:, column])):
+                # '#.bm25.map', 'delta.metric.bm25.map'
+                if (infile_df.iloc[row, column + 2] - infile_df.iloc[row, 2]) > 0:
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][0] += 1
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][1] += infile_df.iloc[row, column + 2] - infile_df.iloc[row, 2]
+                # '#.bm25.recip_rank', 'delta.metric.bm25.recip_rank'
+                if (infile_df.iloc[row, column + 3] - infile_df.iloc[row, 3]) > 0:
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][2] += 1
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][3] += infile_df.iloc[row, column + 3] - infile_df.iloc[row, 3]
+                # '#.qld.map', 'delta.metric.qld.map'
+                if (infile_df.iloc[row, column + 4] - infile_df.iloc[row, 4]) > 0:
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][4] += 1
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][5] += infile_df.iloc[row, column + 4] - infile_df.iloc[row, 4]
+                # '#.qld.recip_rank', 'delta.metric.qld.recip_rank'
+                if (infile_df.iloc[row, column + 5] - infile_df.iloc[row, 5]) > 0:
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][6] += 1
+                    q_star[corpus][str(infile_df.columns.tolist()[column + 1])][7] += infile_df.iloc[row, column + 5] - infile_df.iloc[row, 5]
+
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][0]))  # '#.bm25.map'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][1]))  # 'delta.metric.bm25.map'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][2]))  # '#.bm25.recip_rank
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][3]))  # delta.metric.bm25.recip_rank'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][4]))  # '#.qld.map'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][5]))  # 'delta.metric.qld.map'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][6]))  # '#.qld.recip_rank'
+            new_line.append(str(q_star[corpus][str(infile_df.columns.tolist()[column + 1])][7]))  # 'delta.metric.qld.recip_rank'
+
+            compare_result.loc[len(compare_result)] = new_line
+
+    compare_result.to_csv(outfile_path)
+
+
+
 
 
 def get_input():
@@ -254,8 +383,11 @@ if __name__ == '__main__':
     #     compare_map_each_row(infile_df=pd.read_csv(dataset_csv_path), outfile_path=source, col1=columns.col1, col2=columns.col2)
 
     get_improved_data_all_dataset(source=source, corpora=corpora)
-    files_in_directory = os.listdir(source + 'results/')
-    file_paths_list = [os.path.join(source + 'results/', file) for file in files_in_directory if file.endswith('.improved.queries.all.datasets.txt') and 'analyze' not in file]
-    for file in file_paths_list:
-        analyze_improved_queries_all_dataset(source, infile_path=file)
+    # compare_expanders(source=source, corpora=corpora)
+    # draw_count_chart(source=source)
+    # draw_similarity_chart(source=source)
+    # files_in_directory = os.listdir(source + 'results/')
+    # file_paths_list = [os.path.join(source + 'results/', file) for file in files_in_directory if file.endswith('.improved.queries.all.datasets.txt') and 'analyze' not in file]
+    # for file in file_paths_list:
+    #     analyze_improved_queries_all_dataset(source, infile_path=file)
     # plot_all_datasets(pd.read_csv(f"{source}analyze.bm25.qld.map.mrr.10lang.alldataset.csv"), outfile_path=source)

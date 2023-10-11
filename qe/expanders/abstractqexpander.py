@@ -9,8 +9,6 @@ import sys
 sys.path.extend(['../qe'])
 from cmn import utils
 
-app = Celery('tasks', broker='', backend='')
-
 
 class AbstractQExpander:
     def __init__(self, replace=False, topn=None):
@@ -32,10 +30,9 @@ class AbstractQExpander:
 
     def generate_queue(self, Qfilename, Q_filename):
         query_df = self.read_queries(Qfilename)
-        query_df.apply(lambda row: self.preprocess_expanded_query(self, q=row['query'], qid=row['qid'], clean=True), axis=1)
+        query_df.apply(lambda row: self.preprocess_expanded_query(q=row[self.get_model_name().lower()], qid=row['qid'], clean=True), axis=1)
         self.write_queries(Q_filename)
 
-    @app.task
     def preprocess_expanded_query(self, q, qid, clean):
         try:
             q_, args = self.get_expanded_query(q, args=[qid])
@@ -49,12 +46,9 @@ class AbstractQExpander:
         if self.get_model_name().__contains__('backtranslation'): new_line['semsim'] = args[0]
         self.query_set = pd.concat([self.query_set, pd.DataFrame([new_line])], ignore_index=True)
         print(f'INFO: MAIN: {self.get_model_name()}: {qid}: {q} -> {q_}')
-        # for old method
-        # return q_, args, self.query_set
 
     def write_queries(self, Q_filename):
         self.query_set.to_csv(Q_filename, sep='\t', index=False, header=False)
-
 
     def read_queries(self, Qfilename):
         model_name = self.get_model_name().lower()
@@ -78,7 +72,6 @@ class AbstractQExpander:
                     q = line.split('\t')[1].rstrip()
                 if q != '' and qid != '':
                     new_line = {'qid': qid, model_name: q}
-                    if model_name.__contains__('backtranslation'): new_line['semsim'] = line.split('\t')[2].rstrip()
                     query_df = pd.concat([query_df, pd.DataFrame([new_line])], ignore_index=True)
                     q, qid = '', ''
         return query_df.astype({'qid': 'str'})

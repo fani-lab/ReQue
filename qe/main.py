@@ -47,11 +47,9 @@ def generate(Qfilename, expander, output):
     model_name = expander.get_model_name()
     try:
         Q_filename = f'{output}.{model_name}.txt'
-        # if not os.path.isfile(Q_filename) or overwrite:
-        # old_method
-        # expander.write_expanded_queries(Qfilename, Q_filename)
         expander.generate_queue(Qfilename, Q_filename)
     except: print(f'INFO: MAIN: GENERATE: There has been error in {expander}!\n{traceback.format_exc()}'); raise
+
 
 
 def search(expander, rankers, topicreader, corpus, hitsnumber, output):
@@ -63,11 +61,11 @@ def search(expander, rankers, topicreader, corpus, hitsnumber, output):
             Q_pred = f'{output}.{model_name}.{utils.get_ranker_name(ranker)}.txt'
             q_dic = {}
 
-            index = param.corpora[corpus]['dense_index'] if ranker == 'tct_colbert' else param.corpora[corpus]['dense_index']
+            index = param.corpora[corpus]['dense_index'] if ranker == '-tct_colbert' else param.corpora[corpus]['index']
 
             if ranker == '-tct_colbert':
                 encoder = TctColBertQueryEncoder(param.settings['encoder'])
-                searcher = FaissSearcher.from_prebuilt_index(index, encoder)
+                searcher = FaissSearcher(index, encoder)
             else:
                 searcher = LuceneSearcher(index)
                 if ranker == '-bm25': searcher.set_bm25(0.9, 0.4)
@@ -269,8 +267,8 @@ def addargs(parser):
     corpus.add_argument('--corpus', type=str, choices=['dbpedia', 'antique', 'robust04', 'gov2', 'clueweb09b', 'clueweb12b13', 'trec09mq', 'orcas', 'testds'], required=True, help='The corpus name; required; (example: robust04)')
     gold = parser.add_argument_group('Gold Standard Dataset')
     gold.add_argument('--output', type=str, required=True, help='The output path for the gold standard dataset; required; (example: ./output/robust04/')
-    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld', 'tct_colbert'], default=['bm25', 'qld', 'tct_colbert'], help='The ranker names (default: bm25 qld)')
-    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg', 'recip_rank'], default=['map', 'recip_rank'], help='The evaluation metric names (default: map ndcg)')
+    gold.add_argument('--rankers', nargs='+', type=str.lower, choices=['bm25', 'qld', 'tct_colbert'], default=['bm25'], help='The ranker names (default: bm25 qld)')
+    gold.add_argument('--metrics', nargs='+', type=str.lower, choices=['map', 'ndcg', 'recip_rank'], default=['map'], help='The evaluation metric names (default: map ndcg)')
 
 
 # # python -u main.py --corpus robust04 --output ./output/robust04/ --rankers bm25 qld --metrics map ndcg 2>&1 | tee robust04.log &
