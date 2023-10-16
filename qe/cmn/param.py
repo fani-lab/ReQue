@@ -1,6 +1,7 @@
-import sys
+import sys, platform
 
 sys.path.extend(['../qe'])
+extension = '.exe' if platform.system() == 'Windows' else ""
 
 ReQue = {
     'parallel': 1,
@@ -39,14 +40,10 @@ ReQue = {
     }
 }
 
-anserini = {
-    'path': '../anserini/',
-    'trec_eval': '../anserini/eval/trec_eval.9.0.4/trec_eval'
-}
-
 corpora = {
     'robust04': {
         'index': '../ds/robust04/lucene-index.robust04.pos+docvectors+rawdocs',
+        'dense_index': '../ds/robust04/lucene-index.robust04.20221005.252b5e',
         'size': 528155,
         'topics': '../ds/robust04/topics.robust04.txt',
         'prels': '',  # this will be generated after a retrieval {bm25, qld}
@@ -59,7 +56,7 @@ corpora = {
     'gov2': {
         'index': '../ds/gov2/lucene-index.gov2.pos+docvectors+rawdocs',
         'size': 25000000,
-        'topics': '../ds/gov2/{}.terabyte0{}.txt',  # {} is a placeholder for subtopics in main.py -> run()
+        'topics': '../ds/gov2/topics.terabyte0{}.txt',  # {} is a placeholder for subtopics in main.py -> run()
         'prels': '',  # this will be generated after a retrieval {bm25, qld}
         'w_t': 4,     # OnFields
         'w_a': 0.25,  # OnFields
@@ -137,9 +134,14 @@ corpora = {
     },
 }
 
+anserini = {
+    'path': '../anserini/',
+    'trec_eval': '../anserini/eval/trec_eval.9.0.4/trec_eval'
+}
+
 backtranslation = {
     'src_lng': 'eng_Latn',
-    'tgt_lng': ['fra_Latn'],  # ['pes_Arab', 'yue_Hant', 'fra_Latn', 'deu_Latn', 'dan_Latn']
+    'tgt_lng': ['fra_Latn'], # ['yue_Hant', 'kor_Hang', 'arb_Arab', 'pes_Arab', 'fra_Latn', 'deu_Latn', 'rus_Cyrl', 'zsm_Latn', 'tam_Taml', 'swh_Latn']
     'max_length': 512,
     'device': 'cpu',
     'model_card': 'facebook/nllb-200-distilled-600M',
@@ -147,7 +149,7 @@ backtranslation = {
 }
 
 settings = {
-    'search': {
-        'hitsnumber': 1000  # Number of hits to return
-    },
+    'hitsnumber': 1000,  # Number of hits to return in search
+    'treclib': f'./eval/trec_eval.9.0.4/trec_eval{extension}', # trec_eval path
+    'encoder': 'castorini/tct_colbert-msmarco'
 }

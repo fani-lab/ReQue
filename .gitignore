@@ -75,5 +75,6 @@ ds/qs/clueweb12b13.topn100
 
 qs/cair/data/fasttext/crawl-300d-2M-subword.vec
 
-qe/output/*
-ds/*
+qe/output/
+ds/
+qe/eval/trec_eval/

@@ -1,0 +1,12 @@
+| Language  | Language Family | FLORES-200 code |
+|-----------|-----------------|-----------------|
+| Chinese   | Sino-Tibetan    | yue_Hant        |
+| Korean    | Koreanic        | kor_Hang        |
+| Arabic    | Afro-Asiatic    | arb_Arab        |
+| Farsi     | Indo-European   | pes_Arab        |
+| French    | Indo-European   | fra_Latn        |
+| German    | Indo-European   | deu_Latn        |
+| Russian   | Indo-European   | rus_Cyrl        |
+| Malay     | Austronesian    | zsm_Latn        |
+| Tamil     | Dravidian       | tam_Taml        |
+| Swahili   | Bantu           | swh_Latn        |
