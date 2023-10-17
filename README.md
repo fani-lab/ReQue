@@ -23,9 +23,12 @@
 |   +---eval
 |   +---expanders
 |   |       abstractqexpander.py
+|   |       backtranslation.py
+|   |       thesaurus.py
 |   |       ...
 |   \---stemmers
 |           abstractstemmer.py
+|           krovetz.py
 |           ...
 ```
 
@@ -53,17 +56,6 @@ The following source folders are to be populated by the query dataset `Q`, judme
 |       # wiki-anchor-text-en-ttl-300d.vec.vectors.npy
 ```
 
-[`anserini/`](./anserini/): source folder for [anserini](https://github.com/hosseinfani/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
-
-```
-+---anserini 
-|   +---eval
-|   |   \---trec_eval.9.0.4
-|   \---target
-|       +---appassembler
-|       |   +---bin
-```
-
 [`ds/`](./ds/): (**d**ata**s**et) source folder for original query datasets, including [Robust04](https://trec.nist.gov/data_disks.html), [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm), [ClueWeb09-B](http://lemurproject.org/clueweb09.php/), [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php), [Antique](https://arxiv.org/abs/1905.08957), and [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751).
 
 ```
@@ -86,33 +78,28 @@ The following source folders are to be populated by the query dataset `Q`, judme
 ### Target Folders
 The target folders are the output repo for the expanders, gold standard datasets, and benchmarks.
 
-[`qe/output/`](./qe/output/): output folder for expanders and **the gold standard datasets.**
+[`qe/output/`](./qe/output/): The output folder for all expanders and **the gold standard datasets.**
+[`qe/output/backtranslation/`](./qe/output/backtranslation/): The output directory for backtranslation expander yields results for two information retrieval (IR) metrics, BM25 and QLD, as well as two evaluation metrics, MAP and MRR. These results span across 10 different languages and are based on 5 distinct datasets.
 
 ```
 +---qe
 |   +---output
+|   |   +---backtranslation
+|   |   |   +---clueweb09b
+|   |   |   +---gov2
+|   |   |   +---robust04
+|   |   |   +---antique
+|   |   |   +---dbpedia
 |   |   +---clueweb09b
-|   |   |       topics.clueweb09b.1-200.bm25.map.dataset.csv
-|   |   |       topics.clueweb09b.1-200.qld.map.dataset.csv
 |   |   +---clueweb12b13
-|   |   |       topics.clueweb12b13.201-300.bm25.map.dataset.csv
-|   |   |       topics.clueweb12b13.201-300.qld.map.dataset.csv
 |   |   +---gov2
-|   |   |       topics.gov2.701-850.bm25.map.dataset.csv
-|   |   |       topics.gov2.701-850.qld.map.dataset.csv
-|   |   |---robust04
-|   |   |       topics.robust04.bm25.map.dataset.csv
-|   |   |       topics.robust04.qld.map.dataset.csv
-|   |   |---antique
-|   |   |       topics.antique.bm25.map.dataset.csv
-|   |   |       topics.antique.qld.map.dataset.csv
-|   |   |---dbpedia
-|   |   |       topics.dbpedia.bm25.map.dataset.csv
-|   |   |       topics.dbpedia.qld.map.dataset.csv
+|   |   +---robust04
+|   |   +---antique
+|   |   +---dbpedia
 
 ```
 
-[`qe/output/eval/`](./qe/output/eval): output folder for the reports on performance of expanders and statistics about the gold standard datasets.
+[`qe/output/eval/`](./qe/output/eval): output folder for the reports on the performance of expanders and statistics about the gold standard datasets.
 
 ```
 +---qe
@@ -130,7 +117,7 @@ The target folders are the output repo for the expanders, gold standard datasets
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/hosseinfani/anserini) (java 11+)
+### [anserini](https://github.com/hosseinfani/anserini) (java 11+) [Only for indexing purposes]
 ### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
 ### python 3.7 and the following packages:
 ```
