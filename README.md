@@ -1,5 +1,13 @@
-## Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
-:movie_camera: [Video Playlist](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS): 1) [Introduction](https://youtu.be/ydO-LVhzVb8) -> 2) [Installation](https://youtu.be/Vb45ALbYfy4) ->3) [Extension](https://youtu.be/vfLesv_fMGI)
+# ``ReQue``: Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
+
+## Table of contents
+| [Tutorial Videos](#Tutorial_Videos) | [Installation](#Installing) | Gold standart generation | Performance Evaluation | Authors | License |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+
+## :movie_camera: Tutorial Videos
+|[**Video Playlist**](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS)| [Introduction](https://youtu.be/ydO-LVhzVb8) | [Installation](https://youtu.be/Vb45ALbYfy4) | [Extension](https://youtu.be/vfLesv_fMGI) |
+|:---:|:---:|:---:|:---:|
+
 <p align="center">
     <img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram">
     <br>
@@ -41,7 +49,7 @@
 ```
 
 ### Source Folders [empty]
-The following source folders are to be populated by the query dataset `Q`, judment relevances `Jq`, and pre-trained models/embeddings.
+The following source folders will be populated by the query dataset `Q`, judgment relevances `Jq`, and pre-trained models/embeddings.
 
 [`pre/`](./pre/): (**pre**-trained models) source folder for pre-trained models and/or embeddings, including [FastText](https://fasttext.cc/docs/en/english-vectors.html) and [GloVe](https://nlp.stanford.edu/projects/glove/).
 
@@ -117,7 +125,9 @@ The target folders are the output repo for the expanders, gold standard datasets
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/hosseinfani/anserini) (java 11+) [Only for indexing purposes]
+### [anserini](https://github.com/hosseinfani/anserini) (Only for indexing purposes)
+> [!IMPORTANT]   
+> Anserini is only compatible with Java version 11. Using versions older or newer than this will result in an error.
 ### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
 ### python 3.7 and the following packages:
 ```
