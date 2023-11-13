@@ -4,7 +4,7 @@
 <table align="center" border=0>
 <thead>
   <tr>
-      <td colspan="2"><a href="#Tutorial-Videos">Tutorial Videos</a></td>
+      <td colspan="2"><a href="#Tutorial_Videos">Tutorial Videos</a></td>
       <td style="background-color: white;" rowspan="7"><p align="center"><img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram"/></p></td></tr>
   <tr><td colspan="2"><a href="#Overview">Overview</a></td></tr>
   <tr><td><a href="#Prerequisites">Prerequisites</a></td>
