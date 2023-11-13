@@ -1,7 +1,7 @@
 # ``ReQue``: Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
 
 ## Table of contents
-| [Tutorial Videos](#Tutorial_Videos) | [Installation](#Installing) | Gold standart generation | Performance Evaluation | Authors | License |
+| [Tutorial Videos](#Tutorial_Videos) | [Installation](#Installing) | [Gold standard generation](#Gold Standard Dataset) | [Performance Evaluation](#Performance Evaluation on Generated Gold Standard Datasets for the TREC collections) | [Authors](#Authors) | [License](#License) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 
 ## :movie_camera: Tutorial Videos
