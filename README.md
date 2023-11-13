@@ -1,23 +1,33 @@
 # ``ReQue``: Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
 
 ## Table of contents
-| [Tutorial Videos](#Tutorial_Videos) | [Installation](#Installing) | [Gold standard generation](#Gold_Standard_Dataset) | [Performance Evaluation](#performance-evaluation-on-generated-gold-standard-datasets-for-the-trec-collections) | [Authors](#Authors) | [License](#License) |
-|:---:|:---:|:---:|:---:|:---:|:---:|
+<table align="center" border=0>
+<thead>
+  <tr>
+      <td colspan="2"><a href="#Tutorial">Tutorial Videos</a></td>
+      <td style="background-color: white;" rowspan="7"><p align="center"><img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram"/></p></td></tr>
+  <tr><td colspan="2"><a href="#Overview">Overview</a></td></tr>
+  <tr><td><a href="#Prerequisites">Prerequisites</a></td>
+      <p><td>* <a href="#Models">Pre-trained Models</a></p>
+      <p>* <a href="#original">Original Datasets</a></td></tr></p>
+  <tr><td><a href="#Installing">Installation</a></td>
+      <p><td>* <a href="#Indexing">Indexing</a></p>
+      <p>* <a href="#Running">Running</a></td></tr></p>
+  <tr><td colspan="2"><a href="#Gold">Gold standard generation</a></td></tr>
+  <tr><td colspan="2"><a href="#Performance">Performance Evaluation</a></td></tr>
+  <tr><td colspan="2"><a href="#Authors">Authors</a></td></tr>
+  <tr><td colspan="2"><a href="#License">License</a></td>
+  <td colspan="2"><p align="center">Workflow Diagram</p></td></tr> 
+  <tr><td colspan="3" style="background-color: white;"><img src="./classdiagram.png", width="1000", alt="ReQue: Class Diagram"></td></tr>     
+  <tr><td colspan="3">
+      <p align="center">Class Diagram for Query Expanders in <a href="./qe">qe/</a>. [<a href="https://app.lucidchart.com/documents/view/64fedbb0-b385-4696-9adc-b89bc06e84ba/HWEp-vi-RSFO">zoom in!</a>].</p>
+      <p align="center"> The expanders are initialized by the Expander Factory in <a href="./qe/cmn/expander_factory.py">qe/cmn/expander_factory.py</a></p></td></tr> 
+</thead>
+</table>
 
 ## :movie_camera: Tutorial Videos
 |[**Video Playlist**](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS)| [Introduction](https://youtu.be/ydO-LVhzVb8) | [Installation](https://youtu.be/Vb45ALbYfy4) | [Extension](https://youtu.be/vfLesv_fMGI) |
 |:---:|:---:|:---:|:---:|
-
-<p align="center">
-    <img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram">
-    <br>
-    Workflow Diagram
-    <img src="./classdiagram.png", width="1000", alt="ReQue: Class Diagram">
-    <br>
-    Class Diagram for Query Expanders in <a href="./qe">qe/</a>. [<a href="https://app.lucidchart.com/documents/view/64fedbb0-b385-4696-9adc-b89bc06e84ba/HWEp-vi-RSFO">zoom in!</a>]
-    <br>
-    The expanders are initialized by the Expander Factory in <a href="./qe/cmn/expander_factory.py">qe/cmn/expander_factory.py</a>
-</p>
 
 
 ## Overview [`<o>`](./tree.txt)
