@@ -31,6 +31,8 @@
 
 
 ## Overview [`<o>`](./tree.txt)
+The project contribution involves the creation and sharing of a configurable software workflow and a set of gold-standard datasets for training and evaluating supervised query refinement methods. We aim to empower researchers to construct gold-standard query refinement datasets more flexibly. Our software workflow, taking input datasets of queries with associated relevance judgments, an information retrieval method, and an evaluation metric, produces a gold standard dataset. This dataset includes refined queries for each input query, enhancing the performance of the specified retrieval method according to the chosen evaluation metric. Here we have generated and shared gold-standard datasets for different types of queries. 
+
 ### Codebases
 [`qe/`](./qe/): (**q**uery **e**xpander) source code for the expanders `E={q}`.
 
