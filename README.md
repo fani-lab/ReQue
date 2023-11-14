@@ -35,7 +35,7 @@ The project contribution involves the creation and sharing of a configurable sof
 
 ### Codebases
 [`qe/`](./qe/): (**q**uery **e**xpander) source code for the expanders `E={q}`.
-Here is the [readme](#https://github.com/DelaramRajaei/ReQue/blob/master/qe/expanders/README.md) for expanders.
+Here is the [readme](#./qe/expanders/README.md) for expanders.
 ``` 
 +---qe
 |   |   main.py
