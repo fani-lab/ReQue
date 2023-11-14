@@ -252,7 +252,7 @@ The columns in the gold standard dataset are:
 
 - `star_model_count`: number of refined queries `0 <= |R_qrm| <= |E|` for the original query `q` that improve the original evaluation value;
 
-- `expander.{i}`: the name of the expander `e_i` that revised the original query and improved the original evaluation value;
+- `expander.{i}`: the name of the expander `e_i` that revised the original query and improved the original evaluation value. Information about various expanders can be located [here](#qe/expanders/README.md).;
 
 - `metric.{i}`: the evaluation value `r_m(q'_i, Jq)` of the refined query `q'_i`. 
 
