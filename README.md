@@ -8,7 +8,8 @@
       <td style="background-color: white;" rowspan="7"><p align="center"><img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram"/></p></td></tr>
   <tr><td colspan="2"><a href="#Overview">Overview</a></td></tr>
   <tr><td><a href="#Prerequisites">Prerequisites</a></td>
-      <p><td>* <a href="#Models">Pre-trained Models</a></p>
+      <p><td>* <a href="#Models">Libraries & Packages</a></p>
+      <p>* <a href="#Models">Pre-trained Models</a></p>
       <p>* <a href="#original">Original Datasets</a></td></tr></p>
   <tr><td><a href="#Installing">Installation</a></td>
       <p><td>* <a href="#Indexing">Indexing</a></p>
@@ -136,11 +137,12 @@ The target folders are the output repo for the expanders, gold standard datasets
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/hosseinfani/anserini) (Only for indexing purposes)
+### Libraries & Packages
+* [anserini](https://github.com/hosseinfani/anserini) (Only for indexing purposes)
 > [!IMPORTANT]   
 > Anserini is only compatible with Java version 11. Using versions older or newer than this will result in an error.
-### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
-### python 3.7 and the following packages:
+* [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
+* python 3.7 and the following packages:
 ```
 pandas, scipy, numpy, requests, urllib
 networkx, community, python-louvain
@@ -159,17 +161,20 @@ $> conda activate ReQue
 - [FastText](https://fasttext.cc/docs/en/english-vectors.html)
 - [GloVe](https://nlp.stanford.edu/projects/glove/)
 - [Joint Embedding of Hierarchical Categories and Entities for Concept Categorization and Dataless Classification](https://www.aclweb.org/anthology/C16-1252/)
+- [NLLB-200 as the machine translation](https://huggingface.co/facebook/nllb-200-3.3B)
 
 ### Original Query Datasets
-- [Robust04](https://trec.nist.gov/data_disks.html) [corpus, [topics](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/topics.robust04.txt), [qrels](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/qrels.robust04.txt)]
-- [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval)]
-- [ClueWeb09-B](http://lemurproject.org/clueweb09.php/) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval)]
-- [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval)]
-- [Antique](https://arxiv.org/abs/1905.08957) [[corpus](https://ciir.cs.umass.edu/downloads/Antique/antique-collection.txt), [topics](https://ciir.cs.umass.edu/downloads/Antique/antique-test-queries.txt), [qrels](https://ciir.cs.umass.edu/downloads/Antique/antique-test.qrel)]
-- [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751) [[corpus](https://iai-group.github.io/DBpedia-Entity/), [topics](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/queries-v2.txt), [qrels](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/qrels-v2.txt)]
-- [Wikipedia Anchor Text](http://downloads.dbpedia.org/2016-10/core-i18n/en/anchor_text_en.ttl.bz2)
+| Dataset | Corpus | Topics | Qrels |
+|:---|:---:|:---:|:---:|
+| [Robust04](https://trec.nist.gov/data_disks.html) | - | [topics](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/topics.robust04.txt) | [qrels](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/qrels.robust04.txt) |
+| [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm) | - | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval) |
+| [ClueWeb09-B](http://lemurproject.org/clueweb09.php/) | - | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval) |
+| [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php) |  | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval) |
+| [Antique](https://arxiv.org/abs/1905.08957) | [corpus](https://ciir.cs.umass.edu/downloads/Antique/antique-collection.txt) | [topics](https://ciir.cs.umass.edu/downloads/Antique/antique-test-queries.txt) | [qrels](https://ciir.cs.umass.edu/downloads/Antique/antique-test.qrel) |
+| [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751) | [corpus](https://iai-group.github.io/DBpedia-Entity/) | [topics](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/queries-v2.txt) | [qrels](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/qrels-v2.txt) |
+| [Wikipedia Anchor Text](http://downloads.dbpedia.org/2016-10/core-i18n/en/anchor_text_en.ttl.bz2) | - | - | - |
 
-- **Supported Corpora:** It should be noted that although ReQue supports  the above-mentioned datasets, is not fully dependent on them.  In addition to ```Trec```, ```TrecWebCollection```, ```Clueweb09Collection```, ```Cluweb12Collection```, ```TsvString``` and ```TsvInt``` structure which are already suported by ReQue and Anserini, ReQue can be applied to any TSV format collection as far as the corpus and the queries are in ```docid\tdocument```  and ```qid\query``` format, respectively. The TSV format collection can be converted to Jsoncollection and then indexed as per instructed in [Anserini](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md).  
+**Supported Corpora:** It should be noted that although ReQue supports  the above-mentioned datasets, is not fully dependent on them.  In addition to ```Trec```, ```TrecWebCollection```, ```Clueweb09Collection```, ```Cluweb12Collection```, ```TsvString``` and ```TsvInt``` structure which are already suported by ReQue and Anserini, ReQue can be applied to any TSV format collection as far as the corpus and the queries are in ```docid\tdocument```  and ```qid\query``` format, respectively. The TSV format collection can be converted to Jsoncollection and then indexed as per instructed in [Anserini](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md).  
 
 
 ## Installing
@@ -225,26 +230,11 @@ There are other required parameters that should be set in [params.py](https://gi
 
 `tokens`:  Total number of tokens in the collection e.g., [`148000000`](https://github.com/hosseinfani/ReQue/blob/cfa7eddcb526bd0f82acda77505010a804df884f/qe/cmn/param.py#L25); Required for Onfields and AdapOnFields query expander.
 
-The sample running commands are:
+The sample running for robust04 is:
 
 ```
-$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
-$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
-
-$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker bm25 --metric map 2>&1 | tee gov2.bm25.log &
-$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker qld --metric map 2>&1 | tee gov2.qld.log &
-
-$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker bm25 --metric map 2>&1 | tee clueweb09b.bm25.log &
-$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker qld --metric map 2>&1 | tee clueweb09b.qld.log &
-
-$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker bm25 --metric map 2>&1 | tee clueweb12b13.bm25.log &
-$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker qld --metric map 2>&1 | tee clueweb12b13.qld.log &
-
-$> python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
-$> python -u main.py --corpus antique --output ./output/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
-
-$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker bm25 --metric map 2>&1 | tee dbpedia.bm25.log &
-$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker qld --metric map 2>&1 | tee dbpedia.qld.log &
+$> python -u main.py --corpus robust04 --output ./output/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
+$> python -u main.py --corpus robust04 --output ./output/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
 ```
 
 ## Gold Standard Dataset: [`qe/output/`](./qe/output/)
