@@ -10,12 +10,10 @@
   <tr><td><a href="#Prerequisites">Prerequisites</a></td>
       <p><td>* <a href="#Models">Libraries & Packages</a></p>
       <p>* <a href="#Models">Pre-trained Models</a></p>
-      <p>* <a href="#original">Original Datasets</a></td></tr></p>
-  <tr><td><a href="#Installing">Installation</a></td>
-      <p><td>* <a href="#Indexing">Indexing</a></p>
-      <p>* <a href="#Running">Running</a></td></tr></p>
-  <tr><td colspan="2"><a href="#Gold">Gold standard generation</a></td></tr>
-  <tr><td colspan="2"><a href="#Performance">Performance Evaluation</a></td></tr>
+      <p>* <a href="#original">Original Datasets</a></p></td></tr>
+  <tr><td colspan="2"><a href="#Installing">Installation</a></td></tr>
+  <tr><td colspan="2"><a href="#Gold-Standard-Dataset">Gold Standard Dataset</a></td></tr>
+  <tr><td colspan="2"><a href="#Performance-Evaluation-on-Generated-Gold-Standard-Datasets-for-the-TREC-collections">Performance Evaluation</a></td></tr>
   <tr><td colspan="2"><a href="#Authors">Authors</a></td></tr>
   <tr><td colspan="2"><a href="#License">License</a></td>
   <td colspan="2"><p align="center">Workflow Diagram</p></td></tr> 
@@ -237,8 +235,8 @@ $> python -u main.py --corpus robust04 --output ./output/ --ranker bm25 --metric
 $> python -u main.py --corpus robust04 --output ./output/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
 ```
 
-## Gold Standard Dataset: [`qe/output/`](./qe/output/)
-### Path
+## Gold Standard Dataset
+### Path: [`qe/output/`](./qe/output/)
 The gold standard dataset for each original query dataset is generated in `qe/output/{original query dataset}/*.{ranker}.{metric}.dataset.csv`.
 
 ### File Structure
