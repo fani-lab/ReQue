@@ -1,21 +1,37 @@
-## Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
-:movie_camera: [Video Playlist](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS): 1) [Introduction](https://youtu.be/ydO-LVhzVb8) -> 2) [Installation](https://youtu.be/Vb45ALbYfy4) ->3) [Extension](https://youtu.be/vfLesv_fMGI)
-<p align="center">
-    <img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram">
-    <br>
-    Workflow Diagram
-    <img src="./classdiagram.png", width="1000", alt="ReQue: Class Diagram">
-    <br>
-    Class Diagram for Query Expanders in <a href="./qe">qe/</a>. [<a href="https://app.lucidchart.com/documents/view/64fedbb0-b385-4696-9adc-b89bc06e84ba/HWEp-vi-RSFO">zoom in!</a>]
-    <br>
-    The expanders are initialized by the Expander Factory in <a href="./qe/cmn/expander_factory.py">qe/cmn/expander_factory.py</a>
-</p>
+# ``ReQue``: Extensible Toolkit of Query Refinement Methods & Gold Standard Generation
+
+## Table of contents
+<table align="center" border=0>
+<thead>
+  <tr>
+      <td colspan="2"><a href="#Tutorial_Videos">Tutorial Videos</a></td>
+      <td style="background-color: white;" rowspan="7"><p align="center"><img src="./workflow.png", width="400", alt="ReQue: Workflow Diagram"/></p></td></tr>
+  <tr><td colspan="2"><a href="#Overview">Overview</a></td></tr>
+  <tr><td><a href="#Prerequisites">Prerequisites</a></td>
+      <p><td>* <a href="#Models">Libraries & Packages</a></p>
+      <p>* <a href="#Models">Pre-trained Models</a></p>
+      <p>* <a href="#original">Original Datasets</a></p></td></tr>
+  <tr><td colspan="2"><a href="#Installing">Installation</a></td></tr>
+  <tr><td colspan="2"><a href="#Gold-Standard-Dataset">Gold Standard Dataset</a></td></tr>
+  <tr><td colspan="2"><a href="#Performance-Evaluation-on-Generated-Gold-Standard-Datasets-for-the-TREC-collections">Performance Evaluation</a></td></tr>
+  <tr><td colspan="2"><a href="#Authors">Authors</a></td></tr>
+  <tr><td colspan="2"><a href="#License">License</a></td>
+  <td colspan="2"><p align="center">Workflow Diagram</p></td></tr> 
+</thead>
+</table>
+
+## Tutorial Videos
+ 
+|:movie_camera: [**Video Playlist**](https://www.youtube.com/playlist?list=PLspza9Wj6ETpgJIFvkFqEeHaQHC5AEFNS)| [Introduction](https://youtu.be/ydO-LVhzVb8) | [Installation](https://youtu.be/Vb45ALbYfy4) | [Extension](https://youtu.be/vfLesv_fMGI) |
+|:---:|:---:|:---:|:---:|
 
 
 ## Overview [`<o>`](./tree.txt)
+The project contribution involves the creation and sharing of a configurable software workflow and a set of gold-standard datasets for training and evaluating supervised query refinement methods. We aim to empower researchers to construct gold-standard query refinement datasets more flexibly. Our software workflow, taking input datasets of queries with associated relevance judgments, an information retrieval method, and an evaluation metric, produces a gold standard dataset. This dataset includes refined queries for each input query, enhancing the performance of the specified retrieval method according to the chosen evaluation metric. Here we have generated and shared gold-standard datasets for different types of queries. 
+
 ### Codebases
 [`qe/`](./qe/): (**q**uery **e**xpander) source code for the expanders `E={q}`.
-
+Here is the [readme](/qe/expanders/README.md) for expanders.
 ``` 
 +---qe
 |   |   main.py
@@ -23,9 +39,12 @@
 |   +---eval
 |   +---expanders
 |   |       abstractqexpander.py
+|   |       backtranslation.py
+|   |       thesaurus.py
 |   |       ...
 |   \---stemmers
 |           abstractstemmer.py
+|           krovetz.py
 |           ...
 ```
 
@@ -38,7 +57,7 @@
 ```
 
 ### Source Folders [empty]
-The following source folders are to be populated by the query dataset `Q`, judment relevances `Jq`, and pre-trained models/embeddings.
+The following source folders will be populated by the query dataset `Q`, judgment relevances `Jq`, and pre-trained models/embeddings.
 
 [`pre/`](./pre/): (**pre**-trained models) source folder for pre-trained models and/or embeddings, including [FastText](https://fasttext.cc/docs/en/english-vectors.html) and [GloVe](https://nlp.stanford.edu/projects/glove/).
 
@@ -51,17 +70,6 @@ The following source folders are to be populated by the query dataset `Q`, judme
 |       # temp_model_Wiki.vectors.npy       
 |       # wiki-anchor-text-en-ttl-300d.vec  => https://github.com/hosseinfani/ReQue/blob/df3bcbdc3189a936f39ade0743450b7871e35517/qe/expanders/anchor.py#L22
 |       # wiki-anchor-text-en-ttl-300d.vec.vectors.npy
-```
-
-[`anserini/`](./anserini/): source folder for [anserini](https://github.com/hosseinfani/anserini), indexes for the information corpuses, and [trec_eval](https://github.com/usnistgov/trec_eval).
-
-```
-+---anserini 
-|   +---eval
-|   |   \---trec_eval.9.0.4
-|   \---target
-|       +---appassembler
-|       |   +---bin
 ```
 
 [`ds/`](./ds/): (**d**ata**s**et) source folder for original query datasets, including [Robust04](https://trec.nist.gov/data_disks.html), [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm), [ClueWeb09-B](http://lemurproject.org/clueweb09.php/), [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php), [Antique](https://arxiv.org/abs/1905.08957), and [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751).
@@ -86,33 +94,28 @@ The following source folders are to be populated by the query dataset `Q`, judme
 ### Target Folders
 The target folders are the output repo for the expanders, gold standard datasets, and benchmarks.
 
-[`qe/output/`](./qe/output/): output folder for expanders and **the gold standard datasets.**
+[`qe/output/`](./qe/output/): The output folder for all expanders and **the gold standard datasets.**
+[`qe/output/backtranslation/`](./qe/output/backtranslation/): The output directory for backtranslation expander yields results for two information retrieval (IR) metrics, BM25 and QLD, as well as two evaluation metrics, MAP and MRR. These results span across 10 different languages and are based on 5 distinct datasets.
 
 ```
 +---qe
 |   +---output
+|   |   +---backtranslation
+|   |   |   +---clueweb09b
+|   |   |   +---gov2
+|   |   |   +---robust04
+|   |   |   +---antique
+|   |   |   +---dbpedia
 |   |   +---clueweb09b
-|   |   |       topics.clueweb09b.1-200.bm25.map.dataset.csv
-|   |   |       topics.clueweb09b.1-200.qld.map.dataset.csv
 |   |   +---clueweb12b13
-|   |   |       topics.clueweb12b13.201-300.bm25.map.dataset.csv
-|   |   |       topics.clueweb12b13.201-300.qld.map.dataset.csv
 |   |   +---gov2
-|   |   |       topics.gov2.701-850.bm25.map.dataset.csv
-|   |   |       topics.gov2.701-850.qld.map.dataset.csv
-|   |   |---robust04
-|   |   |       topics.robust04.bm25.map.dataset.csv
-|   |   |       topics.robust04.qld.map.dataset.csv
-|   |   |---antique
-|   |   |       topics.antique.bm25.map.dataset.csv
-|   |   |       topics.antique.qld.map.dataset.csv
-|   |   |---dbpedia
-|   |   |       topics.dbpedia.bm25.map.dataset.csv
-|   |   |       topics.dbpedia.qld.map.dataset.csv
+|   |   +---robust04
+|   |   +---antique
+|   |   +---dbpedia
 
 ```
 
-[`qe/output/eval/`](./qe/output/eval): output folder for the reports on performance of expanders and statistics about the gold standard datasets.
+[`qe/output/eval/`](./qe/output/eval): output folder for the reports on the performance of expanders and statistics about the gold standard datasets.
 
 ```
 +---qe
@@ -130,9 +133,12 @@ The target folders are the output repo for the expanders, gold standard datasets
 ```
 
 ## Prerequisites
-### [anserini](https://github.com/hosseinfani/anserini) (java 11+)
-### [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
-### python 3.7 and the following packages:
+### Libraries & Packages
+* [anserini](https://github.com/hosseinfani/anserini) (Only for indexing purposes)
+> [!IMPORTANT]   
+> Anserini is only compatible with Java version 11. Using versions older or newer than this will result in an error.
+* [cair](https://github.com/wasiahmad/context_attentive_ir) (optional, needed for benchmark on suggesters)
+* python 3.7 and the following packages:
 ```
 pandas, scipy, numpy, requests, urllib
 networkx, community, python-louvain
@@ -151,17 +157,20 @@ $> conda activate ReQue
 - [FastText](https://fasttext.cc/docs/en/english-vectors.html)
 - [GloVe](https://nlp.stanford.edu/projects/glove/)
 - [Joint Embedding of Hierarchical Categories and Entities for Concept Categorization and Dataless Classification](https://www.aclweb.org/anthology/C16-1252/)
+- [NLLB-200 as the machine translation](https://huggingface.co/facebook/nllb-200-3.3B)
 
 ### Original Query Datasets
-- [Robust04](https://trec.nist.gov/data_disks.html) [corpus, [topics](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/topics.robust04.txt), [qrels](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/qrels.robust04.txt)]
-- [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval)]
-- [ClueWeb09-B](http://lemurproject.org/clueweb09.php/) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval)]
-- [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php) [corpus, [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval), [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval)]
-- [Antique](https://arxiv.org/abs/1905.08957) [[corpus](https://ciir.cs.umass.edu/downloads/Antique/antique-collection.txt), [topics](https://ciir.cs.umass.edu/downloads/Antique/antique-test-queries.txt), [qrels](https://ciir.cs.umass.edu/downloads/Antique/antique-test.qrel)]
-- [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751) [[corpus](https://iai-group.github.io/DBpedia-Entity/), [topics](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/queries-v2.txt), [qrels](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/qrels-v2.txt)]
-- [Wikipedia Anchor Text](http://downloads.dbpedia.org/2016-10/core-i18n/en/anchor_text_en.ttl.bz2)
+| Dataset | Corpus | Topics | Qrels |
+|:---|:---:|:---:|:---:|
+| [Robust04](https://trec.nist.gov/data_disks.html) | - | [topics](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/topics.robust04.txt) | [qrels](https://github.com/castorini/anserini/blob/master/src/main/resources/topics-and-qrels/qrels.robust04.txt) |
+| [Gov2](http://ir.dcs.gla.ac.uk/test_collections/gov2-summary.htm) | - | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-gov2.md#retrieval) |
+| [ClueWeb09-B](http://lemurproject.org/clueweb09.php/) | - | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw09b.md#retrieval) |
+| [ClueWeb12-B13](http://lemurproject.org/clueweb12/ClueWeb12-CreateB13.php) |  | [topics](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval) | [qrels](https://github.com/castorini/anserini/blob/master/docs/regressions-cw12b13.md#retrieval) |
+| [Antique](https://arxiv.org/abs/1905.08957) | [corpus](https://ciir.cs.umass.edu/downloads/Antique/antique-collection.txt) | [topics](https://ciir.cs.umass.edu/downloads/Antique/antique-test-queries.txt) | [qrels](https://ciir.cs.umass.edu/downloads/Antique/antique-test.qrel) |
+| [DBPedia](https://dl.acm.org/doi/10.1145/3077136.3080751) | [corpus](https://iai-group.github.io/DBpedia-Entity/) | [topics](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/queries-v2.txt) | [qrels](https://github.com/iai-group/DBpedia-Entity/blob/master/collection/v2/qrels-v2.txt) |
+| [Wikipedia Anchor Text](http://downloads.dbpedia.org/2016-10/core-i18n/en/anchor_text_en.ttl.bz2) | - | - | - |
 
-- **Supported Corpora:** It should be noted that although ReQue supports  the above-mentioned datasets, is not fully dependent on them.  In addition to ```Trec```, ```TrecWebCollection```, ```Clueweb09Collection```, ```Cluweb12Collection```, ```TsvString``` and ```TsvInt``` structure which are already suported by ReQue and Anserini, ReQue can be applied to any TSV format collection as far as the corpus and the queries are in ```docid\tdocument```  and ```qid\query``` format, respectively. The TSV format collection can be converted to Jsoncollection and then indexed as per instructed in [Anserini](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md).  
+**Supported Corpora:** It should be noted that although ReQue supports  the above-mentioned datasets, is not fully dependent on them.  In addition to ```Trec```, ```TrecWebCollection```, ```Clueweb09Collection```, ```Cluweb12Collection```, ```TsvString``` and ```TsvInt``` structure which are already suported by ReQue and Anserini, ReQue can be applied to any TSV format collection as far as the corpus and the queries are in ```docid\tdocument```  and ```qid\query``` format, respectively. The TSV format collection can be converted to Jsoncollection and then indexed as per instructed in [Anserini](https://github.com/castorini/anserini/blob/master/docs/experiments-msmarco-passage.md).  
 
 
 ## Installing
@@ -217,30 +226,15 @@ There are other required parameters that should be set in [params.py](https://gi
 
 `tokens`:  Total number of tokens in the collection e.g., [`148000000`](https://github.com/hosseinfani/ReQue/blob/cfa7eddcb526bd0f82acda77505010a804df884f/qe/cmn/param.py#L25); Required for Onfields and AdapOnFields query expander.
 
-The sample running commands are:
+The sample running for robust04 is:
 
 ```
-$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
-$> python -u main.py --corpus robust04 --output ./output/robust04/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
-
-$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker bm25 --metric map 2>&1 | tee gov2.bm25.log &
-$> python -u main.py --corpus gov2 --output ./output/gov2/ --ranker qld --metric map 2>&1 | tee gov2.qld.log &
-
-$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker bm25 --metric map 2>&1 | tee clueweb09b.bm25.log &
-$> python -u main.py --corpus clueweb09b --output ./output/clueweb09b/ --ranker qld --metric map 2>&1 | tee clueweb09b.qld.log &
-
-$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker bm25 --metric map 2>&1 | tee clueweb12b13.bm25.log &
-$> python -u main.py --corpus clueweb12b13 --output ./output/clueweb12b13/ --ranker qld --metric map 2>&1 | tee clueweb12b13.qld.log &
-
-$> python -u main.py --corpus antique --output ./output/antique/ --ranker bm25 --metric map 2>&1 | tee antique.bm25.log &
-$> python -u main.py --corpus antique --output ./output/antique/ --ranker qld --metric map 2>&1 | tee antique.qld.log &
-
-$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker bm25 --metric map 2>&1 | tee dbpedia.bm25.log &
-$> python -u main.py --corpus dbpedia --output ./output/dbpedia/ --ranker qld --metric map 2>&1 | tee dbpedia.qld.log &
+$> python -u main.py --corpus robust04 --output ./output/ --ranker bm25 --metric map 2>&1 | tee robust04.bm25.log &
+$> python -u main.py --corpus robust04 --output ./output/ --ranker qld --metric map 2>&1 | tee robust04.qld.log &
 ```
 
-## Gold Standard Dataset: [`qe/output/`](./qe/output/)
-### Path
+## Gold Standard Dataset
+### Path: [`qe/output/`](./qe/output/)
 The gold standard dataset for each original query dataset is generated in `qe/output/{original query dataset}/*.{ranker}.{metric}.dataset.csv`.
 
 ### File Structure
@@ -254,7 +248,7 @@ The columns in the gold standard dataset are:
 
 - `star_model_count`: number of refined queries `0 <= |R_qrm| <= |E|` for the original query `q` that improve the original evaluation value;
 
-- `expander.{i}`: the name of the expander `e_i` that revised the original query and improved the original evaluation value;
+- `expander.{i}`: the name of the expander `e_i` that revised the original query and improved the original evaluation value. Information about various expanders can be located [here](/qe/expanders/README.md).;
 
 - `metric.{i}`: the evaluation value `r_m(q'_i, Jq)` of the refined query `q'_i`. 
 
